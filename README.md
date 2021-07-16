@@ -16,3 +16,4 @@ Wallet
  - [ ] 轉幣
  - [ ] burn
  - [ ] mint
+ - [ ] parse contract log  
