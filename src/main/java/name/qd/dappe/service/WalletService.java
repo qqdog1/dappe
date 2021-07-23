@@ -40,13 +40,12 @@ public class WalletService {
 		web3j = web3jService.getWeb3j();
 	}
 	
-	public Double getEthBalance(String address) throws IOException {
+	public BigInteger getEthBalance(String address) throws IOException {
 		EthGetBalance ethGetBalance = web3j.ethGetBalance(address, DefaultBlockParameterName.LATEST).send();
-		BigInteger bigInteger = ethGetBalance.getBalance();
-		return new BigDecimal(bigInteger).divide(Unit.ETHER.getWeiFactor()).doubleValue();
+		return ethGetBalance.getBalance();
 	}
 	
-	public Double getTokenBalance(String address, String currency) throws Exception {
+	public BigInteger getTokenBalance(String address, String currency) throws Exception {
 		String contractAddress = configManager.getContractAddress(currency);
 		if(contractAddress == null) {
 			throw new Exception(String.format("Can't find contract address, currency: {}", currency));
@@ -57,11 +56,6 @@ public class WalletService {
 
 		EthCall response = web3j.ethCall(Transaction.createEthCallTransaction(address, contractAddress, encodedFunction), DefaultBlockParameterName.LATEST).send();
 		
-		BigDecimal balance = new BigDecimal(Numeric.toBigInt(response.getValue()));
-		BigDecimal contractDecimal = configManager.getContractDecimal(currency);
-		if(contractDecimal == null) {
-			throw new Exception(String.format("Get contract decimal failed. currency: {}", currency));
-		}
-		return balance.divide(contractDecimal).doubleValue();
+		return Numeric.toBigInt(response.getValue());
 	}
 }

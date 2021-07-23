@@ -1,5 +1,6 @@
 package name.qd.dappe.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.web3j.utils.Convert.Unit;
 
 import name.qd.dappe.config.ConfigManager;
 import name.qd.dappe.service.WalletService;
@@ -35,9 +37,13 @@ public class WalletController {
 		
 		Double balance;
 		if("ETH".equals(currency)) {
-			balance = walletService.getEthBalance(address);
+			balance = new BigDecimal(walletService.getEthBalance(address)).divide(Unit.ETHER.getWeiFactor()).doubleValue();
 		} else {
-			balance = walletService.getTokenBalance(address, currency);
+			BigDecimal contractDecimal = configManager.getContractDecimal(currency);
+			if(contractDecimal == null) {
+				throw new Exception(String.format("Get contract decimal failed. currency: {}", currency));
+			}
+			balance =  new BigDecimal(walletService.getTokenBalance(address, currency)).divide(contractDecimal).doubleValue();
 		}
 		
 		return ResponseEntity.ok(balance);
