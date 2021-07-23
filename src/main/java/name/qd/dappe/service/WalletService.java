@@ -56,7 +56,12 @@ public class WalletService {
 		String encodedFunction = FunctionEncoder.encode(function);
 
 		EthCall response = web3j.ethCall(Transaction.createEthCallTransaction(address, contractAddress, encodedFunction), DefaultBlockParameterName.LATEST).send();
-		// TODO 要取得這個contract的小數精度 並且換算
-		return Numeric.toBigInt(response.getValue()).doubleValue();
+		
+		BigDecimal balance = new BigDecimal(Numeric.toBigInt(response.getValue()));
+		BigDecimal contractDecimal = configManager.getContractDecimal(currency);
+		if(contractDecimal == null) {
+			throw new Exception(String.format("Get contract decimal failed. currency: {}", currency));
+		}
+		return balance.divide(contractDecimal).doubleValue();
 	}
 }

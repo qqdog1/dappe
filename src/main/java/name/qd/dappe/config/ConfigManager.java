@@ -1,5 +1,6 @@
 package name.qd.dappe.config;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +23,7 @@ public class ConfigManager {
 	@Value("${currencies}")
 	private List<String> supportedCurrencies;
 	private Map<String, String> mapContractAddress = new HashMap<>();
+	private Map<String, BigDecimal> mapContractDecimals = new HashMap<>();
 	
 	@PostConstruct
 	public void init() {
@@ -36,6 +38,11 @@ public class ConfigManager {
 			if(contractAddress != null) {
 				mapContractAddress.put(currency, contractAddress);
 			}
+			
+			String contractDecimals = env.getProperty("currency." + currency + ".contract.decimals");
+			if(contractDecimals != null) {
+				mapContractDecimals.put(currency, BigDecimal.TEN.pow(Integer.valueOf(contractDecimals)));
+			}
 		}
 	}
 	
@@ -45,5 +52,9 @@ public class ConfigManager {
 	
 	public String getContractAddress(String currency) {
 		return mapContractAddress.get(currency);
+	}
+	
+	public BigDecimal getContractDecimal(String currency) {
+		return mapContractDecimals.get(currency);
 	}
 }

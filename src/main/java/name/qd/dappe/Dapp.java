@@ -8,11 +8,14 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
+import javax.swing.event.ListSelectionEvent;
+
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.generated.Uint256;
+import org.web3j.abi.datatypes.generated.Uint8;
 import org.web3j.contracts.eip20.generated.ERC20;
 import org.web3j.crypto.ContractUtils;
 import org.web3j.crypto.Credentials;
@@ -65,6 +68,7 @@ public class Dapp {
 			getBalance(CONTRACT_ADDRESS);
 			getTokenBalance(TEST_ADDRESS, CONTRACT_ADDRESS);
 			getTokenBalance(TEST_ADDRESS2, CONTRACT_ADDRESS);
+			getDecimal(CONTRACT_ADDRESS);
 //			transEth(credentials, TEST_ADDRESS2, 0.11);
 			transToken2(credentials, TEST_ADDRESS2, CONTRACT_ADDRESS, 123);
 		} catch (InterruptedException | ExecutionException | IOException e) {
@@ -110,6 +114,18 @@ public class Dapp {
 	
 	private void getEthAccount() {
 //		web3j.ethAccounts().send();
+	}
+	
+	private void getDecimal(String contractAddress) {
+		Function function = new Function("decimals", Collections.emptyList(), Arrays.asList(new TypeReference<Uint256>() {}));
+		String encodedFunction = FunctionEncoder.encode(function);
+		
+		try {
+			EthCall response = web3j.ethCall(Transaction.createEthCallTransaction(contractAddress, contractAddress, encodedFunction), DefaultBlockParameterName.LATEST).send();
+			System.out.println("Decimals: " + Numeric.toBigInt(response.getValue()));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private BigInteger getLastGas() {
