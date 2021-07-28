@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.web3j.utils.Convert.Unit;
 
 import name.qd.dappe.config.ConfigManager;
+import name.qd.dappe.request.TransferRequest;
 import name.qd.dappe.service.WalletService;
 
 @RestController
@@ -48,6 +50,12 @@ public class WalletController {
 		
 		return ResponseEntity.ok(balance);
 	}
+	
+	@RequestMapping(value = "/transfer", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity transfer(@RequestBody TransferRequest transferRequest) {
+		return null;
+	}
+	
 	
 	private void checkIsSupportedCurrency(String currency) throws Exception {
 		if(!configManager.getSupportedCurrencies().contains(currency)) {

@@ -19,6 +19,8 @@ import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.Transaction;
 import org.web3j.protocol.core.methods.response.EthCall;
 import org.web3j.protocol.core.methods.response.EthGetBalance;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.web3j.tx.Transfer;
 import org.web3j.utils.Numeric;
 import org.web3j.utils.Convert.Unit;
 
@@ -57,5 +59,13 @@ public class WalletService {
 		EthCall response = web3j.ethCall(Transaction.createEthCallTransaction(address, contractAddress, encodedFunction), DefaultBlockParameterName.LATEST).send();
 		
 		return Numeric.toBigInt(response.getValue());
+	}
+	
+	public void transferEth(String fromAddress, String toAddress, BigInteger amount) {
+		
+	}
+	
+	public void transferToken(String currency, String fromAddress, String toAddress, BigInteger amount) {
+		
 	}
 }

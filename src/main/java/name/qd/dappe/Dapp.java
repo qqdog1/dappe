@@ -17,8 +17,14 @@ import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.abi.datatypes.generated.Uint8;
 import org.web3j.contracts.eip20.generated.ERC20;
+import org.web3j.crypto.CipherException;
 import org.web3j.crypto.ContractUtils;
 import org.web3j.crypto.Credentials;
+import org.web3j.crypto.ECKeyPair;
+import org.web3j.crypto.Keys;
+import org.web3j.crypto.Sign;
+import org.web3j.crypto.Wallet;
+import org.web3j.crypto.WalletFile;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.admin.Admin;
 import org.web3j.protocol.admin.methods.response.PersonalListAccounts;
@@ -69,6 +75,8 @@ public class Dapp {
 			getTokenBalance(TEST_ADDRESS, CONTRACT_ADDRESS);
 			getTokenBalance(TEST_ADDRESS2, CONTRACT_ADDRESS);
 			getDecimal(CONTRACT_ADDRESS);
+			getAddress();
+			createAddress();
 //			transEth(credentials, TEST_ADDRESS2, 0.11);
 			transToken2(credentials, TEST_ADDRESS2, CONTRACT_ADDRESS, 123);
 		} catch (InterruptedException | ExecutionException | IOException e) {
@@ -160,6 +168,32 @@ public class Dapp {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private void getAddress() {
+		System.out.println("Address: " + credentials.getAddress());
+	}
+	
+	private void createAddress() {
+		ECKeyPair ecKeyPair = credentials.getEcKeyPair();
+		
+		BigInteger privateKeyInDec = ecKeyPair.getPrivateKey();
+		String privatekeyInHex = privateKeyInDec.toString(16);
+		System.out.println("pKey: " + privatekeyInHex);
+		
+		BigInteger publicKey = ecKeyPair.getPublicKey();
+		System.out.println("public key: " + publicKey.toString(16));
+		System.out.println("Get address by public key: 0x" + Keys.getAddress(publicKey));
+		
+		try {
+			WalletFile walletFile = Wallet.createLight("abc", ecKeyPair);
+			System.out.println("New address: 0x" + walletFile.getAddress());
+		} catch (CipherException e) {
+			e.printStackTrace();
+		}
+		
+		BigInteger publicKey2 = Sign.publicKeyFromPrivate(privateKeyInDec);
+		System.out.println("public key 2: " + publicKey2.toString(16));
 	}
 	
 	private void transToken(Credentials credentialsFrom, String addressTo, String contractAddress, long amount) {
