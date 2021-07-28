@@ -3,6 +3,9 @@ package name.qd.dappe;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
@@ -48,6 +51,10 @@ import org.web3j.utils.Convert.Unit;
 import org.web3j.utils.Numeric;
 
 public class Dapp {
+//	Generate new private key: 1209bd9dc9ebfdb082da97da87bd1cef82d4783d636d88f3f55b87cf40041914
+//	public key: d19554ca05ce7f31427632e05111d7bc15ebdc2bd346dbed264a30d08a57c079088c105719379bc2baa46caf0cd19b5af67719ca4d2b6b3ddb545f02ff50c08
+//	Get address by public key: 0xde2a1b877eba26a4f18822d27522d8eedbac76b7
+	
 	private static final String TEST_PKEY = "ee057a93a5327dbca303b745994de5246b36757c646c734e107d973de2908f33";
 	private static final String TEST_PKEY2 = "fcf4e9da729d2d36bfb609402902ec33008c2fbbfd1b661338d13278ee3cce1f";
 	private static final String CONTRACT_ADDRESS = "0xeCfab06fe2420EB0Dda8dA01093511963e72772c";
@@ -76,7 +83,8 @@ public class Dapp {
 			getTokenBalance(TEST_ADDRESS2, CONTRACT_ADDRESS);
 			getDecimal(CONTRACT_ADDRESS);
 			getAddress();
-			createAddress();
+			getAddress2();
+//			createAddress();
 //			transEth(credentials, TEST_ADDRESS2, 0.11);
 			transToken2(credentials, TEST_ADDRESS2, CONTRACT_ADDRESS, 123);
 		} catch (InterruptedException | ExecutionException | IOException e) {
@@ -110,7 +118,8 @@ public class Dapp {
 	}
 
 	private Credentials getCredentialsFromPrivateKey() {
-		return Credentials.create(TEST_PKEY);
+		return Credentials.create("1209bd9dc9ebfdb082da97da87bd1cef82d4783d636d88f3f55b87cf40041914");
+//		return Credentials.create(TEST_PKEY);
 	}
 	
 	private void getBalance(String address) throws IOException {
@@ -174,7 +183,7 @@ public class Dapp {
 		System.out.println("Address: " + credentials.getAddress());
 	}
 	
-	private void createAddress() {
+	private void getAddress2() {
 		ECKeyPair ecKeyPair = credentials.getEcKeyPair();
 		
 		BigInteger privateKeyInDec = ecKeyPair.getPrivateKey();
@@ -194,6 +203,22 @@ public class Dapp {
 		
 		BigInteger publicKey2 = Sign.publicKeyFromPrivate(privateKeyInDec);
 		System.out.println("public key 2: " + publicKey2.toString(16));
+	}
+	
+	private void createAddress() {
+		try {
+			System.out.println("==================================");
+			ECKeyPair ecKeyPair = Keys.createEcKeyPair();
+			System.out.println("Generate new private key: " + ecKeyPair.getPrivateKey().toString(16));
+			
+			BigInteger publicKey = ecKeyPair.getPublicKey();
+			System.out.println("public key: " + publicKey.toString(16));
+			System.out.println("Get address by public key: 0x" + Keys.getAddress(publicKey));
+			
+			System.out.println("==================================");
+		} catch (InvalidAlgorithmParameterException | NoSuchAlgorithmException | NoSuchProviderException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private void transToken(Credentials credentialsFrom, String addressTo, String contractAddress, long amount) {
