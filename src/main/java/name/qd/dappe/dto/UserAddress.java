@@ -7,7 +7,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table
-public class Address {
+public class UserAddress {
 	@Id
     @GeneratedValue
     private int id;

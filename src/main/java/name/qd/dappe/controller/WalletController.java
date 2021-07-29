@@ -6,15 +6,14 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.utils.Convert.Unit;
 
 import name.qd.dappe.config.ConfigManager;
-import name.qd.dappe.request.TransferRequest;
 import name.qd.dappe.service.WalletService;
 
 @RestController
@@ -32,7 +31,7 @@ public class WalletController {
 	}
 	
 	@RequestMapping(value = "/balance", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Double> getBalance(@RequestParam String address,@RequestParam String currency) throws Exception {
+	public ResponseEntity<Double> getBalance(@RequestParam String address, @RequestParam String currency) throws Exception {
 		checkIsSupportedCurrency(currency);
 		
 		// TODO check address format
@@ -51,9 +50,17 @@ public class WalletController {
 		return ResponseEntity.ok(balance);
 	}
 	
-	@RequestMapping(value = "/transfer", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity transfer(@RequestBody TransferRequest transferRequest) {
-		return null;
+	@RequestMapping(value = "/withdraw", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<TransactionReceipt> transfer(@RequestParam int id, @RequestParam String toAddress, @RequestParam String currency, @RequestParam String amount) throws Exception {
+		checkIsSupportedCurrency(currency);
+		
+		TransactionReceipt transactionReceipt = null;
+		if("ETH".equals(currency)) {
+			transactionReceipt = walletService.transferEth(id, toAddress, new BigDecimal(amount));
+		} else {
+			transactionReceipt = walletService.transferToken(currency, id, toAddress, new BigDecimal(amount));
+		}
+		return ResponseEntity.ok(transactionReceipt);
 	}
 	
 	

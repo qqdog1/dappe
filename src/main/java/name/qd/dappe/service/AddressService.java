@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Keys;
 
-import name.qd.dappe.dto.Address;
+import name.qd.dappe.dto.UserAddress;
 import name.qd.dappe.repository.AddressRepository;
 
 @Service
@@ -23,12 +23,12 @@ public class AddressService {
 	@Autowired
 	private AddressRepository addressRepository;
 	
-	public List<Address> getAllAddress() {
+	public List<UserAddress> getAllAddress() {
 		return addressRepository.findAll();
 	}
 	
-	public Address createAddress() {
-		Address address = new Address();
+	public UserAddress createAddress() {
+		UserAddress address = new UserAddress();
 		try {
 			ECKeyPair ecKeyPair = Keys.createEcKeyPair();
 			String newAddress = Keys.getAddress(ecKeyPair);
@@ -42,8 +42,8 @@ public class AddressService {
 		return address;
 	}
 	
-	public Address getAddress(int id) {
-		Optional<Address> optional = addressRepository.findById(id);
+	public UserAddress getAddress(int id) {
+		Optional<UserAddress> optional = addressRepository.findById(id);
 		if(optional.isEmpty()) return null;
 		return optional.get();
 	}

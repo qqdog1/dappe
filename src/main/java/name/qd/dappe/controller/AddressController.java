@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import name.qd.dappe.dto.Address;
+import name.qd.dappe.dto.UserAddress;
 import name.qd.dappe.service.AddressService;
 
 @RestController
@@ -21,17 +21,17 @@ public class AddressController {
 	private AddressService addressService;
 
 	@RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<List<Address>> getAllAddress() {
+	public ResponseEntity<List<UserAddress>> getAllAddress() {
 		return ResponseEntity.ok(addressService.getAllAddress());
 	}
 	
 	@RequestMapping(value = "/create", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Address> createAddress() {
+	public ResponseEntity<UserAddress> createAddress() {
 		return ResponseEntity.ok(addressService.createAddress());
 	}
 	
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Address> getAddress(@PathVariable int id) {
+	public ResponseEntity<UserAddress> getAddress(@PathVariable int id) {
 		return ResponseEntity.ok(addressService.getAddress(id));
 	}
 }

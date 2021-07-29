@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.springframework.data.repository.CrudRepository;
 
-import name.qd.dappe.dto.Address;
+import name.qd.dappe.dto.UserAddress;
 
-public interface AddressRepository extends CrudRepository<Address, Integer> {
-	List<Address> findAll();
+public interface AddressRepository extends CrudRepository<UserAddress, Integer> {
+	List<UserAddress> findAll();
 }

@@ -14,6 +14,7 @@ import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.generated.Uint256;
+import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.Transaction;
@@ -25,6 +26,7 @@ import org.web3j.utils.Numeric;
 import org.web3j.utils.Convert.Unit;
 
 import name.qd.dappe.config.ConfigManager;
+import name.qd.dappe.dto.UserAddress;
 
 @Service
 public class WalletService {
@@ -34,6 +36,9 @@ public class WalletService {
 
 	@Autowired
 	private Web3jService web3jService;
+	
+	@Autowired
+	private AddressService addressService;
 	
 	private Web3j web3j;
 	
@@ -61,11 +66,16 @@ public class WalletService {
 		return Numeric.toBigInt(response.getValue());
 	}
 	
-	public void transferEth(String fromAddress, String toAddress, BigInteger amount) {
+	public TransactionReceipt transferEth(int id, String toAddress, BigDecimal amount) throws Exception {
+		UserAddress userAddress = addressService.getAddress(id);
+		if(userAddress == null) throw new Exception("id not exist.");
 		
+		Credentials credentials = Credentials.create(userAddress.getPkey());
+		TransactionReceipt transactionReceipt = Transfer.sendFunds(web3j, credentials, toAddress, amount, Unit.ETHER).send();
+		return transactionReceipt;
 	}
 	
-	public void transferToken(String currency, String fromAddress, String toAddress, BigInteger amount) {
-		
+	public TransactionReceipt transferToken(String currency, int id, String toAddress, BigDecimal amount) {
+		return null;
 	}
 }
