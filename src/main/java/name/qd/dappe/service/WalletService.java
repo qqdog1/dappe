@@ -78,6 +78,8 @@ public class WalletService {
 		Credentials credentials = Credentials.create(userAddress.getPkey());
 		TransactionReceipt transactionReceipt = Transfer.sendFunds(web3j, credentials, toAddress, amount, Unit.ETHER).send();
 		UserTransaction userTransaction = toUserTransaction(transactionReceipt, id, "ETH", amount);
+		
+		userTransaction = userTransactionRepository.save(userTransaction);
 		return userTransaction;
 	}
 	
