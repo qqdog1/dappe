@@ -14,37 +14,45 @@ import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Keys;
 
 import name.qd.dappe.dto.UserAddress;
-import name.qd.dappe.repository.AddressRepository;
+import name.qd.dappe.repository.UserAddressRepository;
 
 @Service
 public class AddressService {
 	private static Logger logger = LoggerFactory.getLogger(AddressService.class);
 	
 	@Autowired
-	private AddressRepository addressRepository;
+	private UserAddressRepository addressRepository;
 	
 	public List<UserAddress> getAllAddress() {
 		return addressRepository.findAll();
 	}
 	
 	public UserAddress createAddress() {
-		UserAddress address = new UserAddress();
+		UserAddress userAddress = new UserAddress();
 		try {
 			ECKeyPair ecKeyPair = Keys.createEcKeyPair();
 			String newAddress = Keys.getAddress(ecKeyPair);
-			address.setAddress("0x" + newAddress);
-			address.setPkey(ecKeyPair.getPrivateKey().toString(16));
+			userAddress.setAddress("0x" + newAddress);
+			userAddress.setPkey(ecKeyPair.getPrivateKey().toString(16));
 			
-			address = addressRepository.save(address);
+			userAddress = addressRepository.save(userAddress);
 		} catch (InvalidAlgorithmParameterException | NoSuchAlgorithmException | NoSuchProviderException e) {
 			logger.error("Create ec key pair failed.", e);
 		}
-		return address;
+		return userAddress;
 	}
 	
 	public UserAddress getAddress(int id) {
 		Optional<UserAddress> optional = addressRepository.findById(id);
 		if(optional.isEmpty()) return null;
 		return optional.get();
+	}
+	
+	public UserAddress addAddress(String address, String pkey) {
+		UserAddress userAddress = new UserAddress();
+		userAddress.setAddress(address);
+		userAddress.setPkey(pkey);
+		userAddress = addressRepository.save(userAddress);
+		return userAddress;
 	}
 }

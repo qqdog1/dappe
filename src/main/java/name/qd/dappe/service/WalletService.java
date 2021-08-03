@@ -27,6 +27,8 @@ import org.web3j.utils.Convert.Unit;
 
 import name.qd.dappe.config.ConfigManager;
 import name.qd.dappe.dto.UserAddress;
+import name.qd.dappe.dto.UserTransaction;
+import name.qd.dappe.repository.UserTransactionRepository;
 
 @Service
 public class WalletService {
@@ -39,6 +41,9 @@ public class WalletService {
 	
 	@Autowired
 	private AddressService addressService;
+	
+	@Autowired
+	private UserTransactionRepository userTransactionRepository;
 	
 	private Web3j web3j;
 	
@@ -66,16 +71,31 @@ public class WalletService {
 		return Numeric.toBigInt(response.getValue());
 	}
 	
-	public TransactionReceipt transferEth(int id, String toAddress, BigDecimal amount) throws Exception {
+	public UserTransaction transferEth(int id, String toAddress, BigDecimal amount) throws Exception {
 		UserAddress userAddress = addressService.getAddress(id);
 		if(userAddress == null) throw new Exception("id not exist.");
 		
 		Credentials credentials = Credentials.create(userAddress.getPkey());
 		TransactionReceipt transactionReceipt = Transfer.sendFunds(web3j, credentials, toAddress, amount, Unit.ETHER).send();
-		return transactionReceipt;
+		UserTransaction userTransaction = toUserTransaction(transactionReceipt, id, "ETH", amount);
+		return userTransaction;
 	}
 	
-	public TransactionReceipt transferToken(String currency, int id, String toAddress, BigDecimal amount) {
+	public UserTransaction transferToken(String currency, int id, String toAddress, BigDecimal amount) {
+		amount = amount.multiply(configManager.getContractDecimal(currency));
+		
 		return null;
+	}
+	
+	private UserTransaction toUserTransaction(TransactionReceipt transactionReceipt, int id, String currency, BigDecimal amount) {
+		UserTransaction userTransaction = new UserTransaction();
+		userTransaction.setAmount(amount.doubleValue());
+		userTransaction.setCurrency(currency);
+		userTransaction.setFromAddress(transactionReceipt.getFrom());
+		userTransaction.setGas(transactionReceipt.getGasUsed().longValue());
+		userTransaction.setHash(transactionReceipt.getTransactionHash());
+		userTransaction.setToAddress(transactionReceipt.getTo());
+		userTransaction.setUserId(id);
+		return userTransaction;
 	}
 }

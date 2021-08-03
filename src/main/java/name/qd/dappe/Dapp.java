@@ -17,6 +17,7 @@ import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Function;
+import org.web3j.abi.datatypes.Type;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.abi.datatypes.generated.Uint8;
 import org.web3j.contracts.eip20.generated.ERC20;
@@ -25,7 +26,9 @@ import org.web3j.crypto.ContractUtils;
 import org.web3j.crypto.Credentials;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Keys;
+import org.web3j.crypto.RawTransaction;
 import org.web3j.crypto.Sign;
+import org.web3j.crypto.TransactionEncoder;
 import org.web3j.crypto.Wallet;
 import org.web3j.crypto.WalletFile;
 import org.web3j.protocol.Web3j;
@@ -38,6 +41,8 @@ import org.web3j.protocol.core.methods.response.EthBlockNumber;
 import org.web3j.protocol.core.methods.response.EthCall;
 import org.web3j.protocol.core.methods.response.EthGasPrice;
 import org.web3j.protocol.core.methods.response.EthGetBalance;
+import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
+import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.core.methods.response.Web3ClientVersion;
 import org.web3j.protocol.http.HttpService;
@@ -49,6 +54,9 @@ import org.web3j.tx.gas.DefaultGasProvider;
 import org.web3j.tx.gas.StaticGasProvider;
 import org.web3j.utils.Convert.Unit;
 import org.web3j.utils.Numeric;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Dapp {
 //	Generate new private key: 1209bd9dc9ebfdb082da97da87bd1cef82d4783d636d88f3f55b87cf40041914
@@ -64,6 +72,7 @@ public class Dapp {
 	private Web3j web3j;
 	private Admin admin;
 	private Credentials credentials;
+	private ObjectMapper objectMapper = new ObjectMapper();
 
 	private Dapp() {
 		web3j = Web3j.build(new HttpService());
@@ -86,6 +95,7 @@ public class Dapp {
 			getAddress2();
 //			createAddress();
 //			transEth(credentials, TEST_ADDRESS2, 0.11);
+//			transToken(credentials, TEST_ADDRESS2, CONTRACT_ADDRESS, "123");
 			transToken2(credentials, TEST_ADDRESS2, CONTRACT_ADDRESS, 123);
 		} catch (InterruptedException | ExecutionException | IOException e) {
 			e.printStackTrace();
@@ -118,8 +128,7 @@ public class Dapp {
 	}
 
 	private Credentials getCredentialsFromPrivateKey() {
-		return Credentials.create("1209bd9dc9ebfdb082da97da87bd1cef82d4783d636d88f3f55b87cf40041914");
-//		return Credentials.create(TEST_PKEY);
+		return Credentials.create(TEST_PKEY);
 	}
 	
 	private void getBalance(String address) throws IOException {
@@ -156,6 +165,15 @@ public class Dapp {
 		return DefaultGasProvider.GAS_LIMIT;
 	}
 	
+	private BigInteger getNonce(String fromAddress) throws IOException {
+		BigInteger nonce = null;
+        EthGetTransactionCount ethGetTransactionCount = web3j.ethGetTransactionCount(fromAddress, DefaultBlockParameterName.PENDING).send();
+        if (ethGetTransactionCount != null) {
+        	nonce = ethGetTransactionCount.getTransactionCount();
+        }
+        return nonce;
+	}
+	
 	private void getTokenBalance(String address, String contractAddress) {
 		Function function = new Function("balanceOf", Arrays.asList(new Address(address)), Arrays.asList(new TypeReference<Uint256>() {}));
 		String encodedFunction = FunctionEncoder.encode(function);
@@ -170,10 +188,14 @@ public class Dapp {
 	
 	private void transToken2(Credentials credentialsFrom, String addressTo, String contractAddress, long amount) {
 		BigInteger gas = getLastGas();
-		ERC20 erc20 = ERC20.load(contractAddress, web3j, credentialsFrom, new StaticGasProvider(gas, gas));
+		BigInteger gasLimit = BigInteger.valueOf(42000);
+		ERC20 erc20 = ERC20.load(contractAddress, web3j, credentialsFrom, new StaticGasProvider(gas, gasLimit));
+		System.out.println("==================================================");
 		try {
 			TransactionReceipt transactionReceipt = erc20.transfer(addressTo, BigInteger.valueOf(amount)).send();
-			System.out.println(transactionReceipt.getStatus());
+			System.out.println("==================================================");
+			System.out.println(objectMapper.writeValueAsString(transactionReceipt));
+			System.out.println("==================================================");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -221,38 +243,35 @@ public class Dapp {
 		}
 	}
 	
-	private void transToken(Credentials credentialsFrom, String addressTo, String contractAddress, long amount) {
-		Function function = new Function("transfer", Arrays.asList(new Address(addressTo), new Uint256(amount)), Collections.emptyList());
+	private void transToken(Credentials credentialsFrom, String addressTo, String contractAddress, String amount) {
+		BigDecimal bigDecimalAmount = new BigDecimal(amount);
+		Function function = new Function("transfer", Arrays.asList(new Address(addressTo), new Uint256(bigDecimalAmount.toBigInteger())), Collections.singletonList(new TypeReference<>() {}));
 		String encodedFunction = FunctionEncoder.encode(function);
 
-		TransactionManager transactionManager = new FastRawTransactionManager(web3j, credentialsFrom);
+		BigInteger gas = getLastGas();
+		BigInteger gasLimit = BigInteger.valueOf(42000);
+		BigInteger nonce;
 		try {
-			BigInteger gas = getLastGas();
-			String transactionHash = transactionManager.sendTransaction(gas, gas, contractAddress, encodedFunction, BigInteger.valueOf(amount)).getTransactionHash();
-			Optional<TransactionReceipt> transactionReceipt = web3j.ethGetTransactionReceipt(transactionHash).send().getTransactionReceipt();
-			if(!transactionReceipt.isEmpty()) {
-				TransactionReceipt receipt = transactionReceipt.get();
-				//
-				System.out.println("================= Do transfer ================");
-				System.out.println("getBlockNumberRaw:" + receipt.getBlockNumberRaw());
-				System.out.println("getCumulativeGasUsedRaw:" + receipt.getCumulativeGasUsedRaw());
-				System.out.println("getFrom:" + receipt.getFrom());
-				System.out.println("getGasUsedRaw:" + receipt.getGasUsedRaw());
-				System.out.println("getLogsBloom:" + receipt.getLogsBloom());
-				System.out.println("getRevertReason:" + receipt.getRevertReason());
-				System.out.println("getRoot:" + receipt.getRoot());
-				System.out.println("getStatus:" + receipt.getStatus());
-				System.out.println("getTo:" + receipt.getTo());
-				System.out.println("getTransactionHash:" + receipt.getTransactionHash());
-				System.out.println("getTransactionIndexRaw:" + receipt.getTransactionIndexRaw());
-				System.out.println("getCumulativeGasUsed:" + receipt.getCumulativeGasUsed());
-				System.out.println("getGasUsed:" + receipt.getGasUsed());
-				System.out.println("getLogs:" + receipt.getLogs());
-				System.out.println("getTransactionIndex:" + receipt.getTransactionIndex());
-				System.out.println("================= Transfer end ===============");
-			} else {
-				System.out.println("do transfer failed");
-			}
+			nonce = getNonce(credentialsFrom.getAddress());
+		} catch (IOException e) {
+			e.printStackTrace();
+			return;
+		}
+		
+		RawTransaction rawTransaction = RawTransaction.createTransaction(nonce, gas, gasLimit, contractAddress, encodedFunction);
+		
+		byte[] signMessage = TransactionEncoder.signMessage(rawTransaction, credentials);
+		String hexValue = Numeric.toHexString(signMessage);
+		try {
+			EthSendTransaction ethSendTransaction = web3j.ethSendRawTransaction(hexValue).sendAsync().get();
+			System.out.println("==================================================");
+			System.out.println("Gas * price = " + gas.multiply(gasLimit));
+			System.out.println(objectMapper.writeValueAsString(ethSendTransaction));
+			System.out.println("==================================================");
+		} catch (InterruptedException | ExecutionException e) {
+			e.printStackTrace();
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
