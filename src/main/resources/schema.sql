@@ -10,8 +10,8 @@ CREATE TABLE IF NOT EXISTS user_transaction (
   from_address VARCHAR(64),
   to_address VARCHAR(64),
   currency VARCHAR(6),
-  amount DOUBLE,
-  gas BIGINT,
+  amount VARCHAR(64),
+  gas VARCHAR(32),
   hash VARCHAR(66)
 );
 

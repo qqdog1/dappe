@@ -110,10 +110,10 @@ public class WalletService {
 	
 	private UserTransaction toUserTransaction(TransactionReceipt transactionReceipt, int id, String currency, BigDecimal amount) {
 		UserTransaction userTransaction = new UserTransaction();
-		userTransaction.setAmount(amount.doubleValue());
+		userTransaction.setAmount(amount.toPlainString());
 		userTransaction.setCurrency(currency);
 		userTransaction.setFromAddress(transactionReceipt.getFrom());
-		userTransaction.setGas(transactionReceipt.getGasUsed().longValue());
+		userTransaction.setGas(transactionReceipt.getGasUsed().toString());
 		userTransaction.setHash(transactionReceipt.getTransactionHash());
 		userTransaction.setToAddress(transactionReceipt.getTo());
 		userTransaction.setUserId(id);

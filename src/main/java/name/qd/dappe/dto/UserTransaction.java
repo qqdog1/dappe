@@ -15,8 +15,8 @@ public class UserTransaction {
 	private String fromAddress;
 	private String toAddress;
 	private String currency;
-	private double amount;
-	private long gas;
+	private String amount;
+	private String gas;
 	private String hash;
 	
 	public int getId() {
@@ -49,16 +49,16 @@ public class UserTransaction {
 	public void setCurrency(String currency) {
 		this.currency = currency;
 	}
-	public double getAmount() {
+	public String getAmount() {
 		return amount;
 	}
-	public void setAmount(double amount) {
+	public void setAmount(String amount) {
 		this.amount = amount;
 	}
-	public long getGas() {
+	public String getGas() {
 		return gas;
 	}
-	public void setGas(long gas) {
+	public void setGas(String gas) {
 		this.gas = gas;
 	}
 	public String getHash() {

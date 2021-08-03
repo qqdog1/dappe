@@ -31,20 +31,20 @@ public class WalletController {
 	}
 	
 	@RequestMapping(value = "/balance", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Double> getBalance(@RequestParam String address, @RequestParam String currency) throws Exception {
+	public ResponseEntity<String> getBalance(@RequestParam String address, @RequestParam String currency) throws Exception {
 		checkIsSupportedCurrency(currency);
 		
 		// TODO check address format
 		
-		Double balance;
+		String balance;
 		if("ETH".equals(currency)) {
-			balance = new BigDecimal(walletService.getEthBalance(address)).divide(Unit.ETHER.getWeiFactor()).doubleValue();
+			balance = new BigDecimal(walletService.getEthBalance(address)).divide(Unit.ETHER.getWeiFactor()).toPlainString();
 		} else {
 			BigDecimal contractDecimal = configManager.getContractDecimal(currency);
 			if(contractDecimal == null) {
 				throw new Exception(String.format("Get contract decimal failed. currency: {}", currency));
 			}
-			balance =  new BigDecimal(walletService.getTokenBalance(address, currency)).divide(contractDecimal).doubleValue();
+			balance = new BigDecimal(walletService.getTokenBalance(address, currency)).divide(contractDecimal).toPlainString();
 		}
 		
 		return ResponseEntity.ok(balance);
