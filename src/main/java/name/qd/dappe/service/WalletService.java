@@ -117,6 +117,7 @@ public class WalletService {
 		userTransaction.setHash(transactionReceipt.getTransactionHash());
 		userTransaction.setToAddress(transactionReceipt.getTo());
 		userTransaction.setUserId(id);
+		userTransaction.setBlockNumber(transactionReceipt.getBlockNumber().longValue());
 		return userTransaction;
 	}
 	

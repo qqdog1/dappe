@@ -18,6 +18,7 @@ public class UserTransaction {
 	private String amount;
 	private String gas;
 	private String hash;
+	private long blockNumber;
 	
 	public int getId() {
 		return id;
@@ -66,5 +67,11 @@ public class UserTransaction {
 	}
 	public void setHash(String hash) {
 		this.hash = hash;
+	}
+	public long getBlockNumber() {
+		return blockNumber;
+	}
+	public void setBlockNumber(long blockNumber) {
+		this.blockNumber = blockNumber;
 	}
 }
