@@ -1,5 +1,6 @@
 package name.qd.dappe.dto;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -11,26 +12,24 @@ public class UserTransaction {
 	@Id
     @GeneratedValue
     private int id;
-	private int userId;
+	@Column(name = "from_address")
 	private String fromAddress;
+	@Column(name = "to_address")
 	private String toAddress;
 	private String currency;
 	private String amount;
 	private String gas;
 	private String hash;
+	@Column(name = "block_number")
 	private long blockNumber;
+	@Column(name = "confirm_count")
+	private int confirmCount;
 	
 	public int getId() {
 		return id;
 	}
 	public void setId(int id) {
 		this.id = id;
-	}
-	public int getUserId() {
-		return userId;
-	}
-	public void setUserId(int userId) {
-		this.userId = userId;
 	}
 	public String getFromAddress() {
 		return fromAddress;
@@ -73,5 +72,11 @@ public class UserTransaction {
 	}
 	public void setBlockNumber(long blockNumber) {
 		this.blockNumber = blockNumber;
+	}
+	public int getConfirmCount() {
+		return confirmCount;
+	}
+	public void setConfirmCount(int confirmCount) {
+		this.confirmCount = confirmCount;
 	}
 }

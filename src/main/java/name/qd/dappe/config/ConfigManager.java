@@ -25,6 +25,9 @@ public class ConfigManager {
 	private Map<String, String> mapContractAddress = new HashMap<>();
 	private Map<String, BigDecimal> mapContractDecimals = new HashMap<>();
 	
+	@Value("${eth.node.confirm.count}")
+	private int confirmCount;
+	
 	@PostConstruct
 	public void init() {
 //		try {
@@ -56,5 +59,9 @@ public class ConfigManager {
 	
 	public BigDecimal getContractDecimal(String currency) {
 		return mapContractDecimals.get(currency);
+	}
+	
+	public int getConfirmCount() {
+		return confirmCount;
 	}
 }

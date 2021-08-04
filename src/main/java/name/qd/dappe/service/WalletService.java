@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
 
@@ -84,7 +85,7 @@ public class WalletService {
 		
 		Credentials credentials = Credentials.create(userAddress.getPkey());
 		TransactionReceipt transactionReceipt = Transfer.sendFunds(web3j, credentials, toAddress, amount, Unit.ETHER).send();
-		UserTransaction userTransaction = toUserTransaction(transactionReceipt, id, "ETH", amount);
+		UserTransaction userTransaction = toUserTransaction(transactionReceipt, "ETH", amount);
 		
 		userTransaction = userTransactionRepository.save(userTransaction);
 		return userTransaction;
@@ -102,13 +103,27 @@ public class WalletService {
 		ERC20 erc20 = ERC20.load(contractAddress, web3j, credentials, new StaticGasProvider(gasPrice, gasLimit));
 		
 		TransactionReceipt transactionReceipt = erc20.transfer(toAddress, decimalAmount.toBigInteger()).send();
-		UserTransaction userTransaction = toUserTransaction(transactionReceipt, id, currency, amount);
+		UserTransaction userTransaction = toUserTransaction(transactionReceipt, currency, amount);
 		
 		userTransaction = userTransactionRepository.save(userTransaction);
 		return userTransaction;
 	}
 	
-	private UserTransaction toUserTransaction(TransactionReceipt transactionReceipt, int id, String currency, BigDecimal amount) {
+	public List<UserTransaction> getWithdrawHistory(int id) throws Exception {
+		UserAddress userAddress = addressService.getAddress(id);
+		if(userAddress == null) throw new Exception("id not exist.");
+		
+		return userTransactionRepository.findByFromAddress(userAddress.getAddress());
+	}
+	
+	public List<UserTransaction> getDepositHistory(int id) throws Exception {
+		UserAddress userAddress = addressService.getAddress(id);
+		if(userAddress == null) throw new Exception("id not exist.");
+		
+		return userTransactionRepository.findByToAddress(userAddress.getAddress());
+	}
+	
+	private UserTransaction toUserTransaction(TransactionReceipt transactionReceipt, String currency, BigDecimal amount) {
 		UserTransaction userTransaction = new UserTransaction();
 		userTransaction.setAmount(amount.toPlainString());
 		userTransaction.setCurrency(currency);
@@ -116,8 +131,8 @@ public class WalletService {
 		userTransaction.setGas(transactionReceipt.getGasUsed().toString());
 		userTransaction.setHash(transactionReceipt.getTransactionHash());
 		userTransaction.setToAddress(transactionReceipt.getTo());
-		userTransaction.setUserId(id);
 		userTransaction.setBlockNumber(transactionReceipt.getBlockNumber().longValue());
+		userTransaction.setConfirmCount(0);
 		return userTransaction;
 	}
 	

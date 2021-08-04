@@ -6,15 +6,21 @@ CREATE TABLE IF NOT EXISTS user_address (
 
 CREATE TABLE IF NOT EXISTS user_transaction (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INTEGER,
   from_address VARCHAR(64),
   to_address VARCHAR(64),
   currency VARCHAR(6),
   amount VARCHAR(64),
   gas VARCHAR(32),
   hash VARCHAR(66),
-  block_number BIGINT
+  block_number BIGINT,
+  confirm_count INT
 );
 
-CREATE INDEX IF NOT EXISTS user_transaction_index
-ON user_transaction (user_id);
+CREATE INDEX IF NOT EXISTS user_transaction_index_from_address
+ON user_transaction (from_address);
+
+CREATE INDEX IF NOT EXISTS user_transaction_index_to_address
+ON user_transaction (to_address);
+
+CREATE INDEX IF NOT EXISTS user_transaction_index_confirm_count
+ON user_transaction (confirm_count);

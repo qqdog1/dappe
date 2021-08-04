@@ -63,6 +63,15 @@ public class WalletController {
 		return ResponseEntity.ok(userTransaction);
 	}
 	
+	@RequestMapping(value = "/history/withdraw", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<UserTransaction>> getWithdrawHistory(@RequestParam int id) throws Exception {
+		return ResponseEntity.ok(walletService.getWithdrawHistory(id));
+	}
+	
+	@RequestMapping(value = "/history/deposit", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<UserTransaction>> getDepositHistory(@RequestParam int id) throws Exception {
+		return ResponseEntity.ok(walletService.getDepositHistory(id));
+	}
 	
 	private void checkIsSupportedCurrency(String currency) throws Exception {
 		if(!configManager.getSupportedCurrencies().contains(currency)) {
