@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.web3j.crypto.Credentials;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Keys;
 
@@ -48,9 +49,10 @@ public class AddressService {
 		return optional.get();
 	}
 	
-	public UserAddress addAddress(String address, String pkey) {
+	public UserAddress addAddress(String pkey) {
+		Credentials credentials = Credentials.create(pkey);
 		UserAddress userAddress = new UserAddress();
-		userAddress.setAddress(address);
+		userAddress.setAddress(credentials.getAddress());
 		userAddress.setPkey(pkey);
 		userAddress = addressRepository.save(userAddress);
 		return userAddress;

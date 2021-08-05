@@ -32,8 +32,8 @@ public class AddressController {
 	}
 	
 	@RequestMapping(value = "/add", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<UserAddress> addAddress(@RequestParam String address, @RequestParam String pkey) {
-		return ResponseEntity.ok(addressService.addAddress(address, pkey));
+	public ResponseEntity<UserAddress> addAddress(@RequestParam String pkey) {
+		return ResponseEntity.ok(addressService.addAddress(pkey));
 	}
 	
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)

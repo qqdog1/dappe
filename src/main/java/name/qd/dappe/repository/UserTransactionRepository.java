@@ -8,12 +8,12 @@ import org.springframework.data.repository.CrudRepository;
 import name.qd.dappe.dto.UserTransaction;
 
 public interface UserTransactionRepository extends CrudRepository<UserTransaction, Integer> {
-	@EntityGraph(attributePaths = "from_address")
+	@EntityGraph(attributePaths = "fromAddress")
     List<UserTransaction> findByFromAddress(String fromAddress);
 	
-	@EntityGraph(attributePaths = "to_address")
+	@EntityGraph(attributePaths = "toAddress")
 	List<UserTransaction> findByToAddress(String toAddress);
 	
-	@EntityGraph(attributePaths = "confirm_count")
-	List<UserTransaction> findByConfirmCountLessThan(int confirmCount);
+	@EntityGraph(attributePaths = "confirmCount")
+	List<UserTransaction> findByConfirmCountLessThan(long confirmCount);
 }

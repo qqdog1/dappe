@@ -40,7 +40,7 @@ public class ScheduleService {
 	// 如果有轉入紀錄寫到DB
 	// 尚未完成都會在這邊被計算
 	// 轉出也掃
-	@Scheduled(initialDelay = 30 * 1000, fixedDelay = 30 * 1000)
+	@Scheduled(initialDelay = 5 * 1000, fixedDelay = 5 * 1000)
 	private void checkConfirmCount() {
 		int confirmCount = configManager.getConfirmCount();
 		List<UserTransaction> lst = userTransactionRepository.findByConfirmCountLessThan(confirmCount);
@@ -59,11 +59,13 @@ public class ScheduleService {
 			for(UserTransaction userTransaction : lst) {
 				userTransaction.setConfirmCount(blockNumber - userTransaction.getBlockNumber());
 			}
+			
+			userTransactionRepository.saveAll(lst);
 		}
 	}
 	
 	// scan deposit
-	@Scheduled(initialDelay = 5 *60 * 1000, fixedDelay = 5 *60 * 1000)
+	@Scheduled(initialDelay = 30 * 1000, fixedDelay = 30 * 1000)
 	private void scanAddress() {
 		
 	}
