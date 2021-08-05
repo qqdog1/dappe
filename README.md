@@ -10,7 +10,7 @@ Eth
 Wallet
  - [x] 查到自己的幣的balance  
  - [X] create wallet  
- - [ ] 轉出 block confirm  
+ - [X] 轉出 block confirm  
  - [ ] 轉進 scan address + block confirm
  
 自己的幣
