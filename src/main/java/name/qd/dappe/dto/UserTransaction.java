@@ -23,7 +23,7 @@ public class UserTransaction {
 	@Column(name = "block_number")
 	private long blockNumber;
 	@Column(name = "confirm_count")
-	private int confirmCount;
+	private long confirmCount;
 	
 	public int getId() {
 		return id;
@@ -73,10 +73,10 @@ public class UserTransaction {
 	public void setBlockNumber(long blockNumber) {
 		this.blockNumber = blockNumber;
 	}
-	public int getConfirmCount() {
+	public long getConfirmCount() {
 		return confirmCount;
 	}
-	public void setConfirmCount(int confirmCount) {
+	public void setConfirmCount(long confirmCount) {
 		this.confirmCount = confirmCount;
 	}
 }
