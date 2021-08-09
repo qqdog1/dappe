@@ -16,6 +16,9 @@ CREATE TABLE IF NOT EXISTS user_transaction (
   confirm_count INT
 );
 
+CREATE INDEX IF NOT EXISTS user_address_index_address
+ON user_address (address);
+
 CREATE INDEX IF NOT EXISTS user_transaction_index_from_address
 ON user_transaction (from_address);
 

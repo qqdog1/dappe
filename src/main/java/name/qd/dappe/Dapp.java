@@ -79,27 +79,29 @@ public class Dapp {
 		admin = Admin.build(new HttpService());
 		credentials = getCredentialsFromPrivateKey();
 		
-		try {
-			getVersion();
-			getPersonalListAccounts();
-			getPersonalAccount();
-			getNetVersion();
-			getChainId();
-			getBalance(TEST_ADDRESS);
-			getBalance(TEST_ADDRESS2);
-			getBalance(CONTRACT_ADDRESS);
-			getTokenBalance(TEST_ADDRESS, CONTRACT_ADDRESS);
-			getTokenBalance(TEST_ADDRESS2, CONTRACT_ADDRESS);
-			getDecimal(CONTRACT_ADDRESS);
-			getAddress();
-			getAddress2();
+//		try {
+//			getVersion();
+//			getPersonalListAccounts();
+//			getPersonalAccount();
+//			getNetVersion();
+//			getChainId();
+//			getBalance(TEST_ADDRESS);
+//			getBalance(TEST_ADDRESS2);
+//			getBalance(CONTRACT_ADDRESS);
+//			getTokenBalance(TEST_ADDRESS, CONTRACT_ADDRESS);
+//			getTokenBalance(TEST_ADDRESS2, CONTRACT_ADDRESS);
+//			getDecimal(CONTRACT_ADDRESS);
+//			getAddress();
+//			getAddress2();
+//			getAddressTxnHash(TEST_ADDRESS);
 //			createAddress();
 //			transEth(credentials, TEST_ADDRESS2, 0.11);
 //			transToken(credentials, TEST_ADDRESS2, CONTRACT_ADDRESS, "123");
-			transToken2(credentials, TEST_ADDRESS2, CONTRACT_ADDRESS, 123);
-		} catch (InterruptedException | ExecutionException | IOException e) {
-			e.printStackTrace();
-		}
+//			transToken2(credentials, TEST_ADDRESS2, CONTRACT_ADDRESS, 123);
+			subscribeEvent();
+//		} catch (InterruptedException | ExecutionException | IOException e) {
+//			e.printStackTrace();
+//		}
 	}
 
 	private void getVersion() throws IOException, InterruptedException, ExecutionException {
@@ -225,6 +227,43 @@ public class Dapp {
 		
 		BigInteger publicKey2 = Sign.publicKeyFromPrivate(privateKeyInDec);
 		System.out.println("public key 2: " + publicKey2.toString(16));
+	}
+	
+	private void getAddressTxnHash(String address) {
+		Function function = new Function("transactionHash", Arrays.asList(new Address(address)), Collections.singletonList(new TypeReference<>() {}));
+		String encodedFunction = FunctionEncoder.encode(function);
+		
+		try {
+			EthCall response = web3j.ethCall(Transaction.createEthCallTransaction(address, address, encodedFunction), DefaultBlockParameterName.LATEST).send();
+			System.out.println("txn hash: " + response.getValue());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void subscribeEvent() {
+		// 給一個block內的完整資料
+//		web3j.transactionFlowable().subscribe(tx -> {
+//			System.out.println("subscribe tx: " + objectMapper.writeValueAsString(tx));
+//		});
+		
+		// ?
+//		web3j.blockFlowable(false).subscribe(block -> {
+//			System.out.println("subscribe block: " + block.getResult());
+//		});
+		
+		// 只給block hash
+//		web3j.ethBlockHashFlowable().subscribe(block -> {
+//			System.out.println("subscribe block hash:" + objectMapper.writeValueAsString(block));
+//		});
+
+//		web3j.ethPendingTransactionHashFlowable().subscribe(tx -> {
+//			System.out.println("subscribe eth pending tx: " + objectMapper.writeValueAsString(tx));
+//		});
+		
+//		web3j.pendingTransactionFlowable().subscribe(tx -> {
+//			System.out.println("subscribe pending tx: " + objectMapper.writeValueAsString(tx));
+//		});
 	}
 	
 	private void createAddress() {
