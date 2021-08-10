@@ -8,4 +8,6 @@ import name.qd.dappe.dto.UserAddress;
 
 public interface UserAddressRepository extends CrudRepository<UserAddress, Integer> {
 	List<UserAddress> findAll();
+	
+	boolean existsUserAddressByAddress(String address);
 }
