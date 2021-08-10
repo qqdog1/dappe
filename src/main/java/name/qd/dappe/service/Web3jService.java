@@ -41,6 +41,11 @@ public class Web3jService {
 	private Web3j web3j;
 	
 	private int confirmCount;
+	
+	// 上次關機最後處裡到的block
+	private int lastBlockNumber;
+	// 本次啟動查到最新的block
+	private int startBlockNumber;
 
 	@PostConstruct
 	public void init() {
