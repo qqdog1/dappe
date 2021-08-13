@@ -8,6 +8,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
@@ -35,14 +36,20 @@ import org.web3j.protocol.Web3j;
 import org.web3j.protocol.admin.Admin;
 import org.web3j.protocol.admin.methods.response.PersonalListAccounts;
 import org.web3j.protocol.admin.methods.response.PersonalUnlockAccount;
+import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.Transaction;
+import org.web3j.protocol.core.methods.response.EthBlock;
+import org.web3j.protocol.core.methods.response.EthBlock.TransactionObject;
+import org.web3j.protocol.core.methods.response.EthBlock.TransactionResult;
 import org.web3j.protocol.core.methods.response.EthBlockNumber;
 import org.web3j.protocol.core.methods.response.EthCall;
 import org.web3j.protocol.core.methods.response.EthGasPrice;
 import org.web3j.protocol.core.methods.response.EthGetBalance;
 import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
+import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
+import org.web3j.protocol.core.methods.response.EthTransaction;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.core.methods.response.Web3ClientVersion;
 import org.web3j.protocol.http.HttpService;
@@ -79,7 +86,7 @@ public class Dapp {
 		admin = Admin.build(new HttpService());
 		credentials = getCredentialsFromPrivateKey();
 		
-//		try {
+		try {
 //			getVersion();
 //			getPersonalListAccounts();
 //			getPersonalAccount();
@@ -98,10 +105,12 @@ public class Dapp {
 //			transEth(credentials, TEST_ADDRESS2, 0.11);
 //			transToken(credentials, TEST_ADDRESS2, CONTRACT_ADDRESS, "123");
 //			transToken2(credentials, TEST_ADDRESS2, CONTRACT_ADDRESS, 123);
-			subscribeEvent();
-//		} catch (InterruptedException | ExecutionException | IOException e) {
-//			e.printStackTrace();
-//		}
+//			getSpecificBlock(10778049);
+			getSpecificBlock(10777555);
+//			subscribeEvent();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void getVersion() throws IOException, InterruptedException, ExecutionException {
@@ -138,6 +147,50 @@ public class Dapp {
 		System.out.println("Balance:" + ethGetBalance.getBalance());
 		System.out.println("RawResponse:" + ethGetBalance.getRawResponse());
 		System.out.println("Result:" + ethGetBalance.getResult());
+	}
+	
+	private void getLatestBlock() throws IOException {
+		EthBlock ethBlock = web3j.ethGetBlockByNumber(DefaultBlockParameterName.LATEST, false).send();
+		System.out.println(ethBlock.getBlock().getNumber());
+	}
+	
+	private void getSpecificBlock(long blockNumber) throws IOException {
+		EthBlock ethBlock = web3j.ethGetBlockByNumber(DefaultBlockParameter.valueOf(BigInteger.valueOf(blockNumber)), true).send();
+		List<TransactionResult> lst = ethBlock.getBlock().getTransactions();
+		for(TransactionResult transactionResult : lst) {
+			TransactionObject transaction = (TransactionObject) transactionResult;
+			System.out.println("======================================");
+			System.out.println(objectMapper.writeValueAsString(transaction));
+			System.out.println(objectMapper.writeValueAsString(transaction.get()));
+			
+			if("0x30aa589Fc4E0e7e8991786374ba9Bea1E70660D5".equalsIgnoreCase(transaction.getTo())) {
+				System.out.println("-------------------");
+			}
+			
+			if("0x30aa589Fc4E0e7e8991786374ba9Bea1E70660D5".equalsIgnoreCase(transaction.getFrom())) {
+				EthGetTransactionReceipt tx = web3j.ethGetTransactionReceipt(transaction.getHash()).send();
+				TransactionReceipt transactionReceipt = tx.getResult();
+				System.out.println("tx -------------");
+				System.out.println(objectMapper.writeValueAsString(tx));
+				System.out.println(objectMapper.writeValueAsString(transactionReceipt));
+				String address = transactionReceipt.getLogs().get(0).getTopics().get(2);
+				System.out.println("0x" + address.substring(address.length() - 40, address.length()));
+				String hexValue = transactionReceipt.getLogs().get(0).getData().replace("0x", "");
+				System.out.println(Long.parseLong(hexValue, 16));
+				String hex = transaction.getInput();
+				System.out.println(hexStringToString(hex));
+			}
+		}
+	}
+	
+	public String hexStringToString(String hex) {
+	    int l = hex.length();
+	    byte[] data = new byte[l / 2];
+	    for (int i = 0; i < l; i += 2) {
+	        data[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
+	                + Character.digit(hex.charAt(i + 1), 16));
+	    }
+	    return new String(data);
 	}
 	
 	private void getEthAccount() {
