@@ -1,6 +1,7 @@
 package name.qd.dappe.service;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 
@@ -18,8 +19,11 @@ import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.EthBlock.TransactionObject;
 import org.web3j.protocol.core.methods.response.EthBlock.TransactionResult;
+import org.web3j.protocol.core.methods.response.EthTransaction;
+import org.web3j.protocol.core.methods.response.Transaction;
 import org.web3j.protocol.core.methods.response.Web3ClientVersion;
 import org.web3j.protocol.http.HttpService;
+import org.web3j.utils.Convert.Unit;
 
 import name.qd.dappe.config.ConfigManager;
 import name.qd.dappe.dto.Block;
@@ -137,9 +141,18 @@ public class Web3jService {
 				List<TransactionResult> lst = ethBlock.getBlock().getTransactions();
 				for(TransactionResult transactionResult : lst) {
 					TransactionObject transaction = (TransactionObject) transactionResult;
-					String input = transaction.getInput();
-					if(input.startsWith("0xa9059cbb")) {
+					
+					String toAddress = transaction.getTo();
+					// to address 如果是一般address 就是轉ETH, 是 contract address 就可能是轉幣
+					// TODO 每個block 去scan db 未來應該是要改成Batch
+					if(userAddressRepository.existsUserAddressByAddress(toAddress)) {
+						transferETHRecord(transaction.getHash());
+					} else if(configManager.isSupportedContractAddress(toAddress)) {
+						String input = transaction.getInput();
 						// transfer
+						if(input.startsWith("0xa9059cbb")) {
+							String address = getTransferAddressFromInput(input);
+						}
 					}
 				}
 			
@@ -153,6 +166,30 @@ public class Web3jService {
 	private void addDepositRecord(TransactionObject transaction) {
 		UserTransaction userTransaction = new UserTransaction();
 
+	}
+	
+	private String getTransferAddressFromInput(String input) {
+		return input.substring(34, 74);
+	}
+	
+	private void transferETHRecord(String hash) {
+		try {
+			EthTransaction transaction = web3j.ethGetTransactionByHash(hash).send();
+			Transaction tx = transaction.getResult();
+			
+			UserTransaction userTransaction = new UserTransaction();
+			userTransaction.setAmount(new BigDecimal(tx.getValue()).divide(Unit.ETHER.getWeiFactor()).toPlainString());
+			userTransaction.setBlockNumber(tx.getBlockNumber().longValue());
+			userTransaction.setCurrency("ETH");
+			userTransaction.setFromAddress(tx.getFrom());
+			userTransaction.setGas(tx.getGas().toString());
+			userTransaction.setHash(hash);
+			userTransaction.setToAddress(tx.getTo());
+			
+			userTransactionRepository.save(userTransaction);
+		} catch (IOException e) {
+			logger.error("get transaction from node failed. hash: {}", hash, e);
+		}
 	}
 	
 	// subscribe的方式如果geth node出問題

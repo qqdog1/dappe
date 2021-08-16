@@ -49,6 +49,10 @@ public class ConfigManager {
 		}
 	}
 	
+	public boolean isSupportedContractAddress(String contractAddress) {
+		return mapContractAddress.containsValue(contractAddress);
+	}
+	
 	public List<String> getSupportedCurrencies() {
 		return supportedCurrencies;
 	}

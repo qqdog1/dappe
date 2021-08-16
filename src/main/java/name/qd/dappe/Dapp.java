@@ -106,7 +106,10 @@ public class Dapp {
 //			transToken(credentials, TEST_ADDRESS2, CONTRACT_ADDRESS, "123");
 //			transToken2(credentials, TEST_ADDRESS2, CONTRACT_ADDRESS, 123);
 //			getSpecificBlock(10778049);
+			// trans eth record 10777555
 			getSpecificBlock(10777555);
+			// trans SC record 10846160
+			getSpecificBlock(10846160);
 //			subscribeEvent();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -159,26 +162,30 @@ public class Dapp {
 		List<TransactionResult> lst = ethBlock.getBlock().getTransactions();
 		for(TransactionResult transactionResult : lst) {
 			TransactionObject transaction = (TransactionObject) transactionResult;
-			System.out.println("======================================");
-			System.out.println(objectMapper.writeValueAsString(transaction));
-			System.out.println(objectMapper.writeValueAsString(transaction.get()));
-			
-			if("0x30aa589Fc4E0e7e8991786374ba9Bea1E70660D5".equalsIgnoreCase(transaction.getTo())) {
-				System.out.println("-------------------");
-			}
 			
 			if("0x30aa589Fc4E0e7e8991786374ba9Bea1E70660D5".equalsIgnoreCase(transaction.getFrom())) {
+				if("0x3e694925f348e0887d4a79082facef9f95165fa0".equalsIgnoreCase(transaction.getTo()) ) {
+					System.out.println("Transfer eth:");
+					
+					EthTransaction tran = web3j.ethGetTransactionByHash(transaction.getHash()).send();
+					System.out.println(objectMapper.writeValueAsString(tran));
+					System.out.println(new BigDecimal(tran.getResult().getValue()).divide(Unit.ETHER.getWeiFactor()));
+				}
 				EthGetTransactionReceipt tx = web3j.ethGetTransactionReceipt(transaction.getHash()).send();
 				TransactionReceipt transactionReceipt = tx.getResult();
 				System.out.println("tx -------------");
 				System.out.println(objectMapper.writeValueAsString(tx));
 				System.out.println(objectMapper.writeValueAsString(transactionReceipt));
-				String address = transactionReceipt.getLogs().get(0).getTopics().get(2);
-				System.out.println("0x" + address.substring(address.length() - 40, address.length()));
-				String hexValue = transactionReceipt.getLogs().get(0).getData().replace("0x", "");
-				System.out.println(Long.parseLong(hexValue, 16));
-				String hex = transaction.getInput();
-				System.out.println(hexStringToString(hex));
+				String input = transaction.getInput();
+				System.out.println("input:" + input);
+			} else if("0x3e694925f348e0887d4a79082facef9f95165fa0".equalsIgnoreCase(transaction.getFrom())) {
+				System.out.println("input: " + transaction.getInput());
+				String addr = "0x" + transaction.getInput().substring(34, 74);
+				if(addr.equalsIgnoreCase("0x30aa589Fc4E0e7e8991786374ba9Bea1E70660D5")) {
+					String hex = transaction.getInput().substring(74);
+					System.out.println(hex);
+					System.out.println(new BigInteger(hex.replaceFirst("^0+(?!$)", ""), 16));
+				}
 			}
 		}
 	}
