@@ -107,7 +107,7 @@ public class Dapp {
 //			transToken2(credentials, TEST_ADDRESS2, CONTRACT_ADDRESS, 123);
 //			getSpecificBlock(10778049);
 			// trans eth record 10777555
-			getSpecificBlock(10777555);
+//			getSpecificBlock(10777555);
 			// trans SC record 10846160
 			getSpecificBlock(10846160);
 //			subscribeEvent();
@@ -182,9 +182,13 @@ public class Dapp {
 				System.out.println("input: " + transaction.getInput());
 				String addr = "0x" + transaction.getInput().substring(34, 74);
 				if(addr.equalsIgnoreCase("0x30aa589Fc4E0e7e8991786374ba9Bea1E70660D5")) {
+					System.out.println(objectMapper.writeValueAsString(transaction));
+					
 					String hex = transaction.getInput().substring(74);
 					System.out.println(hex);
 					System.out.println(new BigInteger(hex.replaceFirst("^0+(?!$)", ""), 16));
+					EthTransaction tran = web3j.ethGetTransactionByHash(transaction.getHash()).send();
+					System.out.println(objectMapper.writeValueAsString(tran));
 				}
 			}
 		}

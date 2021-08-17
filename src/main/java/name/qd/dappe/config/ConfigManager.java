@@ -23,6 +23,7 @@ public class ConfigManager {
 	@Value("${currencies}")
 	private List<String> supportedCurrencies;
 	private Map<String, String> mapContractAddress = new HashMap<>();
+	private Map<String, String> mapContractAddressToCurrency = new HashMap<>();
 	private Map<String, BigDecimal> mapContractDecimals = new HashMap<>();
 	
 	@Value("${eth.node.confirm.count}")
@@ -40,6 +41,7 @@ public class ConfigManager {
 			String contractAddress = env.getProperty("currency." + currency + ".contract.address");
 			if(contractAddress != null) {
 				mapContractAddress.put(currency, contractAddress);
+				mapContractAddressToCurrency.put(contractAddress, currency);
 			}
 			
 			String contractDecimals = env.getProperty("currency." + currency + ".contract.decimals");
@@ -50,7 +52,11 @@ public class ConfigManager {
 	}
 	
 	public boolean isSupportedContractAddress(String contractAddress) {
-		return mapContractAddress.containsValue(contractAddress);
+		return mapContractAddressToCurrency.containsKey(contractAddress);
+	}
+	
+	public String getCurrencyByContractAddress(String contractAddress) {
+		return mapContractAddressToCurrency.get(contractAddress);
 	}
 	
 	public List<String> getSupportedCurrencies() {

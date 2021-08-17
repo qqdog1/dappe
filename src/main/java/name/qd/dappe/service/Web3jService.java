@@ -151,7 +151,11 @@ public class Web3jService {
 						String input = transaction.getInput();
 						// transfer
 						if(input.startsWith("0xa9059cbb")) {
-							String address = getTransferAddressFromInput(input);
+							String depositAddress = getTransferAddressFromInput(input);
+							
+							if(userAddressRepository.existsUserAddressByAddress(depositAddress)) {
+								transferTokenRecord(transaction);
+							}
 						}
 					}
 				}
@@ -163,13 +167,13 @@ public class Web3jService {
 		}
 	}
 	
-	private void addDepositRecord(TransactionObject transaction) {
-		UserTransaction userTransaction = new UserTransaction();
-
-	}
-	
 	private String getTransferAddressFromInput(String input) {
 		return input.substring(34, 74);
+	}
+	
+	private BigInteger getAmountFromInput(String input) {
+		String hex = input.substring(74);
+		return new BigInteger(hex.replaceFirst("^0+(?!$)", ""), 16);
 	}
 	
 	private void transferETHRecord(String hash) {
@@ -190,6 +194,23 @@ public class Web3jService {
 		} catch (IOException e) {
 			logger.error("get transaction from node failed. hash: {}", hash, e);
 		}
+	}
+	
+	private void transferTokenRecord(TransactionObject transaction) {
+		UserTransaction userTransaction = new UserTransaction();
+		BigInteger amount = getAmountFromInput(transaction.getInput());
+		String currency = configManager.getCurrencyByContractAddress(transaction.getTo());
+		String toAddress = getTransferAddressFromInput(transaction.getInput());
+		
+		userTransaction.setAmount(new BigDecimal(amount).divide(configManager.getContractDecimal(currency)).toString());
+		userTransaction.setBlockNumber(transaction.getBlockNumber().longValue());
+		userTransaction.setCurrency(currency);
+		userTransaction.setFromAddress(transaction.getFrom());
+		userTransaction.setGas(transaction.getGas().toString());
+		userTransaction.setHash(transaction.getHash());
+		userTransaction.setToAddress(toAddress);
+		
+		userTransactionRepository.save(userTransaction);
 	}
 	
 	// subscribe的方式如果geth node出問題
