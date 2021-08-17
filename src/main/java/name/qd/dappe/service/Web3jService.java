@@ -55,11 +55,6 @@ public class Web3jService {
 	
 	private int confirmCount;
 	
-	// 上次關機最後處裡到的block
-	private int lastBlockNumber;
-	// 本次啟動查到最新的block
-	private int startBlockNumber;
-
 	@PostConstruct
 	public void init() {
 		String nodeUrl = env.getProperty("eth.node.url");
@@ -80,8 +75,9 @@ public class Web3jService {
 		logger.info("Eth node version: {}", web3ClientVersion.getWeb3ClientVersion());
 	}
 
-	@Scheduled(initialDelay = 1 * 1000, fixedDelay = 5 * 60 * 1000)
+	@Scheduled(initialDelay = 1 * 1000, fixedDelay = 10 * 1000)
 	private void syncBlock() {
+		logger.info("sync block start ...");
 		Block block = blockRepository.findByChain("ETH");
 		if(block == null) {
 			insertCurrencyBlock();
@@ -92,10 +88,12 @@ public class Web3jService {
 				updateTransaction(block.getLastBlock(), lastBlockNumber.longValue());
 			}
 		}
+		logger.info("sync block end ...");
 	}
 	
 	private void insertCurrencyBlock() {
 		BigInteger lastBlockNumber = getLastBlockNumber();
+		logger.info("no existing block data in db, save current block as last block: {}", lastBlockNumber);
 		if(lastBlockNumber != null) {
 			saveProcessedBlock(lastBlockNumber.longValue());
 		}
@@ -120,6 +118,7 @@ public class Web3jService {
 	}
 	
 	private void updateConfirmCount(BigInteger blockNumber) {
+		logger.info("update confirm count, last block number: {}", blockNumber);
 		List<UserTransaction> lst = userTransactionRepository.findByConfirmCountLessThan(confirmCount);
 		
 		if(lst != null && lst.size() > 0) {
@@ -146,6 +145,7 @@ public class Web3jService {
 					// to address 如果是一般address 就是轉ETH, 是 contract address 就可能是轉幣
 					// TODO 每個block 去scan db 未來應該是要改成Batch
 					if(userAddressRepository.existsUserAddressByAddress(toAddress)) {
+						logger.info("found new ETH transaction, hash: {}", transaction.getHash());
 						transferETHRecord(transaction.getHash());
 					} else if(configManager.isSupportedContractAddress(toAddress)) {
 						String input = transaction.getInput();
@@ -154,6 +154,7 @@ public class Web3jService {
 							String depositAddress = getTransferAddressFromInput(input);
 							
 							if(userAddressRepository.existsUserAddressByAddress(depositAddress)) {
+								logger.info("found new token transaction, hash: {}", transaction.getHash());
 								transferTokenRecord(transaction);
 							}
 						}

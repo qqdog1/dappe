@@ -16,10 +16,10 @@ CREATE TABLE IF NOT EXISTS user_transaction (
   confirm_count INT
 );
 
-CREATE TABLE IF NOT EXIST block (
+CREATE TABLE IF NOT EXISTS block (
   chain VARCHAR(8) PRIMARY KEY,
   last_block BIGINT
-)
+);
 
 CREATE INDEX IF NOT EXISTS user_address_index_address
 ON user_address (address);

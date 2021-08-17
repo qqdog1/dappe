@@ -50,11 +50,19 @@ public class AddressService {
 	}
 	
 	public UserAddress addAddress(String pkey) {
+		if(pkey == null || pkey.length() != 64) return null;
+		
 		Credentials credentials = Credentials.create(pkey);
+		
 		UserAddress userAddress = new UserAddress();
 		userAddress.setAddress(credentials.getAddress());
 		userAddress.setPkey(pkey);
-		userAddress = addressRepository.save(userAddress);
-		return userAddress;
+		
+		if(!addressRepository.existsUserAddressByAddress(userAddress.getAddress())) {
+			userAddress = addressRepository.save(userAddress);
+			return userAddress;
+		}
+		
+		return null;
 	}
 }
