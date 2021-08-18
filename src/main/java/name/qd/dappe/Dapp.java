@@ -3,6 +3,9 @@ package name.qd.dappe;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -82,8 +85,9 @@ public class Dapp {
 	private ObjectMapper objectMapper = new ObjectMapper();
 
 	private Dapp() {
-		web3j = Web3j.build(new HttpService());
-		admin = Admin.build(new HttpService());
+		web3j = Web3j.build(new HttpService("https://main-light.eth.linkpool.io"));
+//		web3j = Web3j.build(new HttpService());
+//		admin = Admin.build(new HttpService());
 		credentials = getCredentialsFromPrivateKey();
 		
 		try {
@@ -92,6 +96,8 @@ public class Dapp {
 //			getPersonalAccount();
 //			getNetVersion();
 //			getChainId();
+//			getBalanceByPkey("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+//			getBalance("0xE011b77EC41Cd5D792Ae8952E7bAB47D232f2594");
 //			getBalance(TEST_ADDRESS);
 //			getBalance(TEST_ADDRESS2);
 //			getBalance(CONTRACT_ADDRESS);
@@ -103,16 +109,64 @@ public class Dapp {
 //			getAddressTxnHash(TEST_ADDRESS);
 //			createAddress();
 //			transEth(credentials, TEST_ADDRESS2, 0.11);
+//			transEth("0000000000000000000000000000000000000000000000000000000000000000", "0x30aa589Fc4E0e7e8991786374ba9Bea1E70660D5", 1);
 //			transToken(credentials, TEST_ADDRESS2, CONTRACT_ADDRESS, "123");
 //			transToken2(credentials, TEST_ADDRESS2, CONTRACT_ADDRESS, 123);
 //			getSpecificBlock(10778049);
 			// trans eth record 10777555
 //			getSpecificBlock(10777555);
 			// trans SC record 10846160
-			getSpecificBlock(10846160);
+//			getSpecificBlock(10846160);
 //			subscribeEvent();
+//			genKeyAddress(5);
+			scanKeyAddress(4649);
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+	}
+	
+	private void genKeyAddress(int from) {
+		int end = (from * 16) + 16;
+		for(int i = from * 16 ; i < end ; i++) {
+			String hex = Integer.toHexString(i);
+			String pkey = ("0000000000000000000000000000000000000000000000000000000000000000" + hex).substring(hex.length());
+			Credentials credential = Credentials.create(pkey);
+			System.out.println(pkey);
+			System.out.println("https://etherscan.io/address/" + credential.getAddress());
+			System.out.println("========================================================");
+		}
+	}
+	
+	private void scanKeyAddress(int from) throws IOException {
+		for(int x = from ;; x++) {
+			int end = (x * 16) + 16;
+			for(int i = x * 16 ; i < end ; i++) {
+				String hex = Integer.toHexString(i);
+				String pkey = ("0000000000000000000000000000000000000000000000000000000000000000" + hex).substring(hex.length());
+				
+				
+				Credentials credential = Credentials.create(pkey);
+				
+				EthGetBalance ethGetBalance = web3j.ethGetBalance(credential.getAddress(), DefaultBlockParameterName.LATEST).send();
+				if(ethGetBalance.getBalance().longValue() > 0) {
+					Files.write(Paths.get("C:\\Users\\shawn\\Desktop\\crp.txt"), pkey.getBytes(), StandardOpenOption.APPEND);
+					Files.write(Paths.get("C:\\Users\\shawn\\Desktop\\crp.txt"), "\n".getBytes(), StandardOpenOption.APPEND);
+					Files.write(Paths.get("C:\\Users\\shawn\\Desktop\\crp.txt"), credential.getAddress().getBytes(), StandardOpenOption.APPEND);
+					Files.write(Paths.get("C:\\Users\\shawn\\Desktop\\crp.txt"), "\n".getBytes(), StandardOpenOption.APPEND);
+					Files.write(Paths.get("C:\\Users\\shawn\\Desktop\\crp.txt"), ethGetBalance.getBalance().toString().getBytes(), StandardOpenOption.APPEND);
+					Files.write(Paths.get("C:\\Users\\shawn\\Desktop\\crp.txt"), "\n".getBytes(), StandardOpenOption.APPEND);
+					Files.write(Paths.get("C:\\Users\\shawn\\Desktop\\crp.txt"), "-------------".getBytes(), StandardOpenOption.APPEND);
+					Files.write(Paths.get("C:\\Users\\shawn\\Desktop\\crp.txt"), "\n".getBytes(), StandardOpenOption.APPEND);
+				}
+				
+				try {
+					Thread.sleep(300);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			Files.write(Paths.get("C:\\Users\\shawn\\Desktop\\crp.txt"), String.valueOf(x).getBytes(), StandardOpenOption.APPEND);
+			Files.write(Paths.get("C:\\Users\\shawn\\Desktop\\crp.txt"), "\n".getBytes(), StandardOpenOption.APPEND);
 		}
 	}
 
@@ -150,6 +204,12 @@ public class Dapp {
 		System.out.println("Balance:" + ethGetBalance.getBalance());
 		System.out.println("RawResponse:" + ethGetBalance.getRawResponse());
 		System.out.println("Result:" + ethGetBalance.getResult());
+	}
+	
+	private void getBalanceByPkey(String pkey) throws IOException {
+		Credentials credential = Credentials.create(pkey);
+		System.out.println(credential.getAddress());
+		getBalance(credential.getAddress());
 	}
 	
 	private void getLatestBlock() throws IOException {
@@ -387,6 +447,11 @@ public class Dapp {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private void transEth(String pkey, String addressTo, double amount) {
+		Credentials credential = Credentials.create(pkey);
+		transEth(credential, addressTo, amount);
 	}
 
 	public static void main(String[] args) {
