@@ -21,6 +21,18 @@ CREATE TABLE IF NOT EXISTS block (
   last_block BIGINT
 );
 
+CREATE TABLE IF NOT EXISTS scan_count (
+  chain VARCHAR(8) PRIMARY KEY,
+  count BIGINT
+);
+
+CREATE TABLE IF NOT EXISTS scan_result (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  pkey VARCHAR(64) NOT NULL,
+  address VARCHAR(64) NOT NULL,
+  balance BIGINT
+);
+
 CREATE INDEX IF NOT EXISTS user_address_index_address
 ON user_address (address);
 
@@ -32,3 +44,6 @@ ON user_transaction (to_address);
 
 CREATE INDEX IF NOT EXISTS user_transaction_index_confirm_count
 ON user_transaction (confirm_count);
+
+CREATE INDEX IF NOT EXISTS user_transaction_index_hash
+ON user_transaction (hash);

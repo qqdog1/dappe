@@ -145,8 +145,10 @@ public class Web3jService {
 					// to address 如果是一般address 就是轉ETH, 是 contract address 就可能是轉幣
 					// TODO 每個block 去scan db 未來應該是要改成Batch
 					if(userAddressRepository.existsUserAddressByAddress(toAddress)) {
-						logger.info("found new ETH transaction, hash: {}", transaction.getHash());
-						transferETHRecord(transaction.getHash());
+						if(!userTransactionRepository.existsUserTransactionByHash(transaction.getHash())) {
+							logger.info("found new ETH transaction, hash: {}", transaction.getHash());
+							transferETHRecord(transaction.getHash());
+						}
 					} else if(configManager.isSupportedContractAddress(toAddress)) {
 						String input = transaction.getInput();
 						// transfer
@@ -154,8 +156,10 @@ public class Web3jService {
 							String depositAddress = getTransferAddressFromInput(input);
 							
 							if(userAddressRepository.existsUserAddressByAddress(depositAddress)) {
-								logger.info("found new token transaction, hash: {}", transaction.getHash());
-								transferTokenRecord(transaction);
+								if(!userTransactionRepository.existsUserTransactionByHash(transaction.getHash())) {
+									logger.info("found new token transaction, hash: {}", transaction.getHash());
+									transferTokenRecord(transaction);
+								}
 							}
 						}
 					}
