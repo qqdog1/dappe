@@ -163,7 +163,8 @@ public class Web3jService {
 			
 				saveProcessedBlock(processedNumber);
 			} catch (IOException e) {
-				e.printStackTrace();
+				logger.error("update transaction failed at block number: {}", processedNumber, e);
+				processedNumber--;
 			}
 		}
 	}
