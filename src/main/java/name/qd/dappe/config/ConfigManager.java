@@ -40,6 +40,7 @@ public class ConfigManager {
 		for(String currency : supportedCurrencies) {
 			String contractAddress = env.getProperty("currency." + currency + ".contract.address");
 			if(contractAddress != null) {
+				contractAddress = contractAddress.toLowerCase();
 				mapContractAddress.put(currency, contractAddress);
 				mapContractAddressToCurrency.put(contractAddress, currency);
 			}
@@ -55,8 +56,7 @@ public class ConfigManager {
 		return mapContractAddressToCurrency.containsKey(contractAddress);
 	}
 	
-	public String getCurrencyByContractAddress(String contractAddress) {
-		return mapContractAddressToCurrency.get(contractAddress);
+	public String getCurrencyByContractAddress(String contractAddress) {	return mapContractAddressToCurrency.get(contractAddress);
 	}
 	
 	public List<String> getSupportedCurrencies() {

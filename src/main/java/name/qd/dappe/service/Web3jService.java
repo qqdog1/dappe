@@ -174,7 +174,7 @@ public class Web3jService {
 	}
 	
 	private String getTransferAddressFromInput(String input) {
-		return input.substring(34, 74);
+		return "0x" + input.substring(34, 74);
 	}
 	
 	private BigInteger getAmountFromInput(String input) {

@@ -87,7 +87,7 @@ public class WalletService {
 		TransactionReceipt transactionReceipt = Transfer.sendFunds(web3j, credentials, toAddress, amount, Unit.ETHER).send();
 		UserTransaction userTransaction = toUserTransaction(transactionReceipt, "ETH", amount);
 		
-		userTransaction = userTransactionRepository.save(userTransaction);
+		userTransaction = saveUserTransaction(userTransaction);
 		return userTransaction;
 	}
 	
@@ -103,9 +103,18 @@ public class WalletService {
 		ERC20 erc20 = ERC20.load(contractAddress, web3j, credentials, new StaticGasProvider(gasPrice, gasLimit));
 		
 		TransactionReceipt transactionReceipt = erc20.transfer(toAddress, decimalAmount.toBigInteger()).send();
-		UserTransaction userTransaction = toUserTransaction(transactionReceipt, currency, amount);
+		UserTransaction userTransaction = toUserTransaction(transactionReceipt, currency, amount, toAddress);
 		
-		userTransaction = userTransactionRepository.save(userTransaction);
+		userTransaction = saveUserTransaction(userTransaction);
+		return userTransaction;
+	}
+	
+	private UserTransaction saveUserTransaction(UserTransaction userTransaction) {
+		if(!userTransactionRepository.existsUserTransactionByHash(userTransaction.getHash())) {
+			userTransaction = userTransactionRepository.save(userTransaction);
+		} else {
+			userTransaction = userTransactionRepository.findByHash(userTransaction.getHash());
+		}
 		return userTransaction;
 	}
 	
@@ -133,6 +142,12 @@ public class WalletService {
 		userTransaction.setToAddress(transactionReceipt.getTo());
 		userTransaction.setBlockNumber(transactionReceipt.getBlockNumber().longValue());
 		userTransaction.setConfirmCount(0);
+		return userTransaction;
+	}
+	
+	private UserTransaction toUserTransaction(TransactionReceipt transactionReceipt, String currency, BigDecimal amount, String toAddress) {
+		UserTransaction userTransaction = toUserTransaction(transactionReceipt, currency, amount);
+		userTransaction.setToAddress(toAddress);
 		return userTransaction;
 	}
 	
