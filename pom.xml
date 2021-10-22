@@ -49,6 +49,16 @@
 			<version>4.8.4</version>
 		</dependency>
 		<dependency>
+			<groupId>wf.bitcoin</groupId>
+			<artifactId>bitcoin-rpc-client</artifactId>
+			<version>1.2.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.onflow</groupId>
+			<artifactId>flow-jvm-sdk</artifactId>
+			<version>0.3.0</version>
+		</dependency>
+		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 			<version>1.4.200</version>

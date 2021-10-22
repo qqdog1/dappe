@@ -1,8 +1,11 @@
-package name.qd.dappe.service;
+package name.qd.dappe.service.eth;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -19,6 +22,8 @@ import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.contracts.eip20.generated.ERC20;
 import org.web3j.crypto.Credentials;
+import org.web3j.crypto.ECKeyPair;
+import org.web3j.crypto.Keys;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.Transaction;
@@ -35,23 +40,28 @@ import org.web3j.utils.Convert.Unit;
 import name.qd.dappe.config.ConfigManager;
 import name.qd.dappe.dto.UserAddress;
 import name.qd.dappe.dto.UserTransaction;
+import name.qd.dappe.repository.UserAddressRepository;
 import name.qd.dappe.repository.UserTransactionRepository;
+import name.qd.dappe.service.AddressService;
 
 @Service
-public class WalletService {
-	private static Logger logger = LoggerFactory.getLogger(WalletService.class);
+public class ETHWalletService {
+	private static Logger logger = LoggerFactory.getLogger(ETHWalletService.class);
 	
 	@Autowired
 	private ConfigManager configManager;
 
 	@Autowired
-	private Web3jService web3jService;
+	private ETHService web3jService;
 	
 	@Autowired
 	private AddressService addressService;
 	
 	@Autowired
 	private UserTransactionRepository userTransactionRepository;
+	
+	@Autowired
+	private UserAddressRepository userAddressRepository;
 	
 	private Web3j web3j;
 	
@@ -60,13 +70,28 @@ public class WalletService {
 		web3j = web3jService.getWeb3j();
 	}
 	
+	public UserAddress createAddress() {
+		UserAddress userAddress = new UserAddress();
+		try {
+			ECKeyPair ecKeyPair = Keys.createEcKeyPair();
+			String newAddress = Keys.getAddress(ecKeyPair);
+			userAddress.setAddress("0x" + newAddress);
+			userAddress.setPkey(ecKeyPair.getPrivateKey().toString(16));
+			
+			userAddress = userAddressRepository.save(userAddress);
+		} catch (InvalidAlgorithmParameterException | NoSuchAlgorithmException | NoSuchProviderException e) {
+			logger.error("Create ec key pair failed.", e);
+		}
+		return userAddress;
+	}
+	
 	public BigInteger getEthBalance(String address) throws IOException {
 		EthGetBalance ethGetBalance = web3j.ethGetBalance(address, DefaultBlockParameterName.LATEST).send();
 		return ethGetBalance.getBalance();
 	}
 	
-	public BigInteger getTokenBalance(String address, String currency) throws Exception {
-		String contractAddress = configManager.getContractAddress(currency);
+	public BigInteger getTokenBalance(String chain, String address, String currency) throws Exception {
+		String contractAddress = configManager.getContractAddress(chain, currency);
 		if(contractAddress == null) {
 			throw new Exception(String.format("Can't find contract address, currency: {}", currency));
 		}
@@ -91,15 +116,15 @@ public class WalletService {
 		return userTransaction;
 	}
 	
-	public UserTransaction transferToken(String currency, int id, String toAddress, BigDecimal amount) throws Exception {
+	public UserTransaction transferToken(String chain, String currency, int id, String toAddress, BigDecimal amount) throws Exception {
 		UserAddress userAddress = addressService.getAddress(id);
 		if(userAddress == null) throw new Exception("id not exist.");
 		
 		Credentials credentials = Credentials.create(userAddress.getPkey());
-		BigDecimal decimalAmount = amount.multiply(configManager.getContractDecimal(currency));
+		BigDecimal decimalAmount = amount.multiply(configManager.getContractDecimal(chain, currency));
 		BigInteger gasPrice = getLastGasPrice();
 		BigInteger gasLimit = BigInteger.valueOf(42000);
-		String contractAddress = configManager.getContractAddress(currency);
+		String contractAddress = configManager.getContractAddress(chain, currency);
 		ERC20 erc20 = ERC20.load(contractAddress, web3j, credentials, new StaticGasProvider(gasPrice, gasLimit));
 		
 		TransactionReceipt transactionReceipt = erc20.transfer(toAddress, decimalAmount.toBigInteger()).send();

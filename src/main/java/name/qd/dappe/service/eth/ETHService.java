@@ -1,4 +1,4 @@
-package name.qd.dappe.service;
+package name.qd.dappe.service.eth;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -10,7 +10,6 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.web3j.protocol.Web3j;
@@ -33,11 +32,10 @@ import name.qd.dappe.repository.UserAddressRepository;
 import name.qd.dappe.repository.UserTransactionRepository;
 
 @Service
-public class Web3jService {
-	private static Logger logger = LoggerFactory.getLogger(Web3jService.class);
-
-	@Autowired
-	private Environment env;
+public class ETHService {
+	private static Logger logger = LoggerFactory.getLogger(ETHService.class);
+	
+	public static String CHAIN = "ETH";
 	
 	@Autowired
 	private ConfigManager configManager;
@@ -56,8 +54,8 @@ public class Web3jService {
 	private int confirmCount;
 	
 	@PostConstruct
-	public void init() {
-		String nodeUrl = env.getProperty("eth.node.url");
+	private void init() {
+		String nodeUrl = configManager.getNodeUrl(CHAIN);
 		web3j = Web3j.build(new HttpService(nodeUrl));
 
 		try {
@@ -66,7 +64,7 @@ public class Web3jService {
 			logger.error("Get eth node version failed, url:{}", nodeUrl, e);
 		}
 		
-		confirmCount = configManager.getConfirmCount();
+		confirmCount = configManager.getConfirmCount(CHAIN);
 //		subscribeTransaction();
 	}
 	
@@ -74,8 +72,9 @@ public class Web3jService {
 		Web3ClientVersion web3ClientVersion = web3j.web3ClientVersion().send();
 		logger.info("Eth node version: {}", web3ClientVersion.getWeb3ClientVersion());
 	}
-
-	@Scheduled(initialDelay = 1 * 1000, fixedDelay = 10 * 1000)
+	
+	// TODO
+//	@Scheduled(initialDelay = 1 * 1000, fixedDelay = 10 * 1000)
 	private void syncBlock() {
 		logger.info("sync block start ...");
 		Block block = blockRepository.findByChain("ETH");
@@ -149,7 +148,7 @@ public class Web3jService {
 							logger.info("found new ETH transaction, hash: {}", transaction.getHash());
 							transferETHRecord(transaction.getHash());
 						}
-					} else if(configManager.isSupportedContractAddress(toAddress)) {
+					} else if(configManager.isSupportedContractAddress(CHAIN, toAddress)) {
 						String input = transaction.getInput();
 						// transfer
 						if(input.startsWith("0xa9059cbb")) {
@@ -205,10 +204,10 @@ public class Web3jService {
 	private void transferTokenRecord(TransactionObject transaction) {
 		UserTransaction userTransaction = new UserTransaction();
 		BigInteger amount = getAmountFromInput(transaction.getInput());
-		String currency = configManager.getCurrencyByContractAddress(transaction.getTo());
+		String currency = configManager.getCurrencyByContractAddress(CHAIN, transaction.getTo());
 		String toAddress = getTransferAddressFromInput(transaction.getInput());
 		
-		userTransaction.setAmount(new BigDecimal(amount).divide(configManager.getContractDecimal(currency)).toString());
+		userTransaction.setAmount(new BigDecimal(amount).divide(configManager.getContractDecimal(CHAIN, currency)).toString());
 		userTransaction.setBlockNumber(transaction.getBlockNumber().longValue());
 		userTransaction.setCurrency(currency);
 		userTransaction.setFromAddress(transaction.getFrom());

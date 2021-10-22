@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -13,6 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import name.qd.dappe.dto.UserAddress;
 import name.qd.dappe.service.AddressService;
+import name.qd.dappe.service.eth.ETHService;
+import name.qd.dappe.service.eth.ETHWalletService;
+import name.qd.dappe.service.flow.FlowService;
 
 @RestController
 @RequestMapping("/address")
@@ -20,6 +24,12 @@ public class AddressController {
 	
 	@Autowired
 	private AddressService addressService;
+	
+	@Autowired
+	private ETHWalletService ethWalletService;
+	
+	@Autowired
+	private FlowService flowService;
 
 	@RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<UserAddress>> getAllAddress() {
@@ -27,12 +37,18 @@ public class AddressController {
 	}
 	
 	@RequestMapping(value = "/create", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<UserAddress> createAddress() {
-		return ResponseEntity.ok(addressService.createAddress());
+	public ResponseEntity<UserAddress> createAddress(@RequestParam String chain) throws Exception {
+		// TODO 可改成interface 或其他方法
+		if(ETHService.CHAIN.equals(chain)) {
+			return ResponseEntity.ok(ethWalletService.createAddress());
+		} else if(FlowService.CHAIN.equals(chain)) {
+			return ResponseEntity.ok(flowService.createAddress());
+		}
+		throw new Exception(String.format("Chain is not supported, {}", chain));
 	}
 	
-	@RequestMapping(value = "/add", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<UserAddress> addAddress(@RequestParam String pkey) {
+	@RequestMapping(value = "/add", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<UserAddress> addAddress(@RequestBody String pkey) {
 		return ResponseEntity.ok(addressService.addAddress(pkey));
 	}
 	

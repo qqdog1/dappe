@@ -16,6 +16,7 @@ public class UserTransaction {
 	private String fromAddress;
 	@Column(name = "to_address")
 	private String toAddress;
+	private String chain;
 	private String currency;
 	private String amount;
 	private String gas;
@@ -42,6 +43,12 @@ public class UserTransaction {
 	}
 	public void setToAddress(String toAddress) {
 		this.toAddress = toAddress;
+	}
+	public String getChain() {
+		return chain;
+	}
+	public void setChain(String chain) {
+		this.chain = chain;
 	}
 	public String getCurrency() {
 		return currency;

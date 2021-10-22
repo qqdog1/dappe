@@ -1,6 +1,7 @@
 package name.qd.dappe.config;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,70 +9,65 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ConfigManager {
-//	@Value("classpath:contract.conf")
-//	private Resource contractConfig;
-	
 	@Autowired
 	private Environment env;
 	
-	@Value("${currencies}")
-	private List<String> supportedCurrencies;
-	private Map<String, String> mapContractAddress = new HashMap<>();
-	private Map<String, String> mapContractAddressToCurrency = new HashMap<>();
-	private Map<String, BigDecimal> mapContractDecimals = new HashMap<>();
+	private List<String> supportedChains;
 	
-	@Value("${eth.node.confirm.count}")
-	private int confirmCount;
+	private Map<String, ChainConfig> mapChainConfig = new HashMap<>();
 	
+	@SuppressWarnings("unchecked")
 	@PostConstruct
 	public void init() {
-//		try {
-//			lst = new ObjectMapper().readValue(contractConfig.getInputStream(), List.class);
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
+		supportedChains = env.getProperty("chains", List.class);
 		
-		for(String currency : supportedCurrencies) {
-			String contractAddress = env.getProperty("currency." + currency + ".contract.address");
-			if(contractAddress != null) {
-				contractAddress = contractAddress.toLowerCase();
-				mapContractAddress.put(currency, contractAddress);
-				mapContractAddressToCurrency.put(contractAddress, currency);
-			}
-			
-			String contractDecimals = env.getProperty("currency." + currency + ".contract.decimals");
-			if(contractDecimals != null) {
-				mapContractDecimals.put(currency, BigDecimal.TEN.pow(Integer.valueOf(contractDecimals)));
-			}
+		for(String chain : supportedChains) {
+			mapChainConfig.put(chain, new ChainConfig(chain));
 		}
 	}
 	
-	public boolean isSupportedContractAddress(String contractAddress) {
-		return mapContractAddressToCurrency.containsKey(contractAddress);
+	public String getNodeUrl(String chain) {
+		return mapChainConfig.get(chain).getNodeUrl();
 	}
 	
-	public String getCurrencyByContractAddress(String contractAddress) {	return mapContractAddressToCurrency.get(contractAddress);
+	public boolean isSupportedContractAddress(String chain, String contractAddress) {
+		if(mapChainConfig.containsKey(chain)) {
+			return mapChainConfig.get(chain).getCurrencyByContractAddress(contractAddress) != null;
+		}
+		return false;
+	}
+	
+	public String getCurrencyByContractAddress(String chain, String contractAddress) {	
+		return mapChainConfig.get(chain).getCurrencyByContractAddress(contractAddress);
 	}
 	
 	public List<String> getSupportedCurrencies() {
-		return supportedCurrencies;
+		List<String> lst = new ArrayList<>();
+		for(String chain : supportedChains) {
+			List<String> lstSupportedCurrencies = getSupportedCurrencies(chain);
+			lst.addAll(lstSupportedCurrencies);
+		}
+		return lst;
 	}
 	
-	public String getContractAddress(String currency) {
-		return mapContractAddress.get(currency);
+	public List<String> getSupportedCurrencies(String chain) {
+		return mapChainConfig.get(chain).getSupportedCurrencies();
 	}
 	
-	public BigDecimal getContractDecimal(String currency) {
-		return mapContractDecimals.get(currency);
+	public String getContractAddress(String chain, String currency) {
+		return mapChainConfig.get(chain).getContractAddress(currency);
 	}
 	
-	public int getConfirmCount() {
-		return confirmCount;
+	public BigDecimal getContractDecimal(String chain, String currency) {
+		return mapChainConfig.get(chain).getContractDecimal(currency);
+	}
+	
+	public int getConfirmCount(String chain) {
+		return mapChainConfig.get(chain).getConfirmCount();
 	}
 }

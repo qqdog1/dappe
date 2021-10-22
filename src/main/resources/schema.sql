@@ -1,6 +1,8 @@
 CREATE TABLE IF NOT EXISTS user_address (
   id INT AUTO_INCREMENT PRIMARY KEY,
+  chain VARCHAR(8) NOT NULL,
   pkey VARCHAR(64) NOT NULL,
+  public_key VARCHAR(128),
   address VARCHAR(64) NOT NULL
 );
 
@@ -8,6 +10,7 @@ CREATE TABLE IF NOT EXISTS user_transaction (
   id INT AUTO_INCREMENT PRIMARY KEY,
   from_address VARCHAR(64),
   to_address VARCHAR(64),
+  chain VARCHAR(8),
   currency VARCHAR(6),
   amount VARCHAR(64),
   gas VARCHAR(32),
@@ -19,18 +22,6 @@ CREATE TABLE IF NOT EXISTS user_transaction (
 CREATE TABLE IF NOT EXISTS block (
   chain VARCHAR(8) PRIMARY KEY,
   last_block BIGINT
-);
-
-CREATE TABLE IF NOT EXISTS scan_count (
-  chain VARCHAR(8) PRIMARY KEY,
-  count BIGINT
-);
-
-CREATE TABLE IF NOT EXISTS scan_result (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  pkey VARCHAR(64) NOT NULL,
-  address VARCHAR(64) NOT NULL,
-  balance BIGINT
 );
 
 CREATE INDEX IF NOT EXISTS user_address_index_address
