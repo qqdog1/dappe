@@ -1,8 +1,8 @@
-package name.qd.dappe.repository;
+package name.qd.ws.repository;
 
 import org.springframework.data.repository.CrudRepository;
 
-import name.qd.dappe.dto.Block;
+import name.qd.ws.dto.Block;
 
 public interface BlockRepository extends CrudRepository<Block, Void> {
 	Block findByChain(String chain);

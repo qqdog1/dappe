@@ -1,4 +1,4 @@
-package name.qd.dappe.config;
+package name.qd.ws.config;
 
 import java.io.IOException;
 import java.math.BigDecimal;

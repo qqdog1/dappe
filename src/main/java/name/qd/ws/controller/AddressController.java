@@ -1,4 +1,4 @@
-package name.qd.dappe.controller;
+package name.qd.ws.controller;
 
 import java.util.List;
 
@@ -12,11 +12,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import name.qd.dappe.dto.UserAddress;
-import name.qd.dappe.service.AddressService;
-import name.qd.dappe.service.eth.ETHService;
-import name.qd.dappe.service.eth.ETHWalletService;
-import name.qd.dappe.service.flow.FlowService;
+import name.qd.ws.dto.UserAddress;
+import name.qd.ws.service.AddressService;
+import name.qd.ws.service.eth.ETHService;
+import name.qd.ws.service.eth.ETHWalletService;
+import name.qd.ws.service.flow.FlowService;
 
 @RestController
 @RequestMapping("/address")

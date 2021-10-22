@@ -1,4 +1,4 @@
-package name.qd.dappe.service.eth;
+package name.qd.ws.service.eth;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -37,12 +37,12 @@ import org.web3j.tx.gas.StaticGasProvider;
 import org.web3j.utils.Numeric;
 import org.web3j.utils.Convert.Unit;
 
-import name.qd.dappe.config.ConfigManager;
-import name.qd.dappe.dto.UserAddress;
-import name.qd.dappe.dto.UserTransaction;
-import name.qd.dappe.repository.UserAddressRepository;
-import name.qd.dappe.repository.UserTransactionRepository;
-import name.qd.dappe.service.AddressService;
+import name.qd.ws.config.ConfigManager;
+import name.qd.ws.dto.UserAddress;
+import name.qd.ws.dto.UserTransaction;
+import name.qd.ws.repository.UserAddressRepository;
+import name.qd.ws.repository.UserTransactionRepository;
+import name.qd.ws.service.AddressService;
 
 @Service
 public class ETHWalletService {

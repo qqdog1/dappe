@@ -1,4 +1,4 @@
-package name.qd.dappe.service.eth;
+package name.qd.ws.service.eth;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -24,12 +24,12 @@ import org.web3j.protocol.core.methods.response.Web3ClientVersion;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.utils.Convert.Unit;
 
-import name.qd.dappe.config.ConfigManager;
-import name.qd.dappe.dto.Block;
-import name.qd.dappe.dto.UserTransaction;
-import name.qd.dappe.repository.BlockRepository;
-import name.qd.dappe.repository.UserAddressRepository;
-import name.qd.dappe.repository.UserTransactionRepository;
+import name.qd.ws.config.ConfigManager;
+import name.qd.ws.dto.Block;
+import name.qd.ws.dto.UserTransaction;
+import name.qd.ws.repository.BlockRepository;
+import name.qd.ws.repository.UserAddressRepository;
+import name.qd.ws.repository.UserTransactionRepository;
 
 @Service
 public class ETHService {

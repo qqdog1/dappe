@@ -1,4 +1,4 @@
-package name.qd.dappe.dto;
+package name.qd.ws.dto;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

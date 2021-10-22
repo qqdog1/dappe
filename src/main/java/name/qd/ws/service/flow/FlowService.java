@@ -1,4 +1,4 @@
-package name.qd.dappe.service.flow;
+package name.qd.ws.service.flow;
 
 
 import java.io.IOException;
@@ -35,9 +35,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import name.qd.dappe.config.ConfigManager;
-import name.qd.dappe.dto.UserAddress;
-import name.qd.dappe.repository.UserAddressRepository;
+import name.qd.ws.config.ConfigManager;
+import name.qd.ws.dto.UserAddress;
+import name.qd.ws.repository.UserAddressRepository;
 
 @Service
 public class FlowService {

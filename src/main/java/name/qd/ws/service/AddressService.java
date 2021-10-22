@@ -1,4 +1,4 @@
-package name.qd.dappe.service;
+package name.qd.ws.service;
 
 import java.util.List;
 import java.util.Optional;
@@ -9,8 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.Credentials;
 
-import name.qd.dappe.dto.UserAddress;
-import name.qd.dappe.repository.UserAddressRepository;
+import name.qd.ws.dto.UserAddress;
+import name.qd.ws.repository.UserAddressRepository;
 
 @Service
 public class AddressService {

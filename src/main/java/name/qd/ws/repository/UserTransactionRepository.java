@@ -1,11 +1,11 @@
-package name.qd.dappe.repository;
+package name.qd.ws.repository;
 
 import java.util.List;
 
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.repository.CrudRepository;
 
-import name.qd.dappe.dto.UserTransaction;
+import name.qd.ws.dto.UserTransaction;
 
 public interface UserTransactionRepository extends CrudRepository<UserTransaction, Integer> {
 	@EntityGraph(attributePaths = "fromAddress")
