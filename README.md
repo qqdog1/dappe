@@ -1,5 +1,5 @@
-# dappe
-dapp exercise
+# ws
+wallet service exercise
 
 Geth
  - [ ] import account  
