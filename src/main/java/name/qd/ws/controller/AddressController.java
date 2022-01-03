@@ -42,7 +42,7 @@ public class AddressController {
 		if(ETHService.CHAIN.equals(chain)) {
 			return ResponseEntity.ok(ethWalletService.createAddress());
 		} else if(FlowService.CHAIN.equals(chain)) {
-			return ResponseEntity.ok(flowService.createAddress());
+//			return ResponseEntity.ok(flowService.createAddress());
 		}
 		throw new Exception(String.format("Chain is not supported, {}", chain));
 	}

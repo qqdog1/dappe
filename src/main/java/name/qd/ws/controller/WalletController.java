@@ -53,7 +53,7 @@ public class WalletController {
 				balance = new BigDecimal(walletService.getTokenBalance(chain, address, currency)).divide(contractDecimal).toPlainString();
 			}
 		} else if("FLOW".equals(chain)) {
-			balance = flowService.getBalance(address);
+//			balance = flowService.getBalance(address);
 		}
 		
 		return ResponseEntity.ok(balance);
