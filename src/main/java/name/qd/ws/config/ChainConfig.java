@@ -27,7 +27,8 @@ public class ChainConfig {
 	private Map<String, BigDecimal> mapContractDecimals = new HashMap<>();
 
 	public ChainConfig(String chain) {
-		configRecource = new ClassPathResource(chain + ".conf");
+		String configFile = chain + ".conf";
+		configRecource = new ClassPathResource(configFile);
 		
 		try {
 			JsonNode node = new ObjectMapper().readTree(configRecource.getInputStream());
@@ -48,8 +49,10 @@ public class ChainConfig {
 				BigDecimal contractDecimal = BigDecimal.TEN.pow(Integer.valueOf(nodeCurrency.get("decimal").asText()));
 				mapContractDecimals.put(currency, contractDecimal);
 			}
+			
+			logger.info("{} config loaded.", configFile);
 		} catch (IOException e) {
-			logger.error("Load config failed. {}", chain + ".conf");
+			logger.error("Load config failed. {}", configFile);
 		}
 	}
 	

@@ -52,7 +52,7 @@ public class ETHWalletService {
 	private ConfigManager configManager;
 
 	@Autowired
-	private ETHService web3jService;
+	private ETHService ethService;
 	
 	@Autowired
 	private AddressService addressService;
@@ -67,7 +67,7 @@ public class ETHWalletService {
 	
 	@PostConstruct
 	public void init() {
-		web3j = web3jService.getWeb3j();
+		web3j = ethService.getWeb3j();
 	}
 	
 	public UserAddress createAddress() {
