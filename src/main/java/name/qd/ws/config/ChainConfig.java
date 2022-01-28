@@ -15,6 +15,8 @@ import org.springframework.core.io.Resource;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import name.qd.ws.utils.JsonUtils;
+
 public class ChainConfig {
 	private static Logger logger = LoggerFactory.getLogger(ChainConfig.class);
 	private Resource configRecource;
@@ -31,7 +33,7 @@ public class ChainConfig {
 		configRecource = new ClassPathResource(configFile);
 		
 		try {
-			JsonNode node = new ObjectMapper().readTree(configRecource.getInputStream());
+			JsonNode node = JsonUtils.objectMapper.readTree(configRecource.getInputStream());
 			
 			nodeUrl = node.get("nodeUrl").asText();
 			confirmCount = node.get("confirmCount").asInt();

@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 public class FlowService {
 //	private static Logger logger = LoggerFactory.getLogger(FlowService.class);
 //	
-	public static String CHAIN = "FLOW";
 //	
 //	private String SERVICE_PRIVATE_KEY = "c547883651c7e1a866372d2e9d8ffc3204080676136866b4a852101d08f92c04";
 //	private String SERVICE_ADDRESS = "0xc12c21f4c961c434";

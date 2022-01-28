@@ -25,6 +25,7 @@ import org.web3j.protocol.http.HttpService;
 import org.web3j.utils.Convert.Unit;
 
 import name.qd.ws.config.ConfigManager;
+import name.qd.ws.constant.SupportedChain;
 import name.qd.ws.dto.Block;
 import name.qd.ws.dto.UserTransaction;
 import name.qd.ws.repository.BlockRepository;
@@ -34,8 +35,6 @@ import name.qd.ws.repository.UserTransactionRepository;
 @Service
 public class ETHService {
 	private static Logger logger = LoggerFactory.getLogger(ETHService.class);
-	
-	public static String CHAIN = "ETH";
 	
 	@Autowired
 	private ConfigManager configManager;
@@ -55,7 +54,7 @@ public class ETHService {
 	
 	@PostConstruct
 	private void init() {
-		String nodeUrl = configManager.getNodeUrl(CHAIN);
+		String nodeUrl = configManager.getNodeUrl(SupportedChain.ETH.name());
 		web3j = Web3j.build(new HttpService(nodeUrl));
 
 		try {
@@ -64,7 +63,7 @@ public class ETHService {
 			logger.error("Get eth node version failed, url:{}", nodeUrl, e);
 		}
 		
-		confirmCount = configManager.getConfirmCount(CHAIN);
+		confirmCount = configManager.getConfirmCount(SupportedChain.ETH.name());
 //		subscribeTransaction();
 	}
 	
@@ -148,7 +147,7 @@ public class ETHService {
 							logger.info("found new ETH transaction, hash: {}", transaction.getHash());
 							transferETHRecord(transaction.getHash());
 						}
-					} else if(configManager.isSupportedContractAddress(CHAIN, toAddress)) {
+					} else if(configManager.isSupportedContractAddress(SupportedChain.ETH.name(), toAddress)) {
 						String input = transaction.getInput();
 						// transfer
 						if(input.startsWith("0xa9059cbb")) {
@@ -204,10 +203,10 @@ public class ETHService {
 	private void transferTokenRecord(TransactionObject transaction) {
 		UserTransaction userTransaction = new UserTransaction();
 		BigInteger amount = getAmountFromInput(transaction.getInput());
-		String currency = configManager.getCurrencyByContractAddress(CHAIN, transaction.getTo());
+		String currency = configManager.getCurrencyByContractAddress(SupportedChain.ETH.name(), transaction.getTo());
 		String toAddress = getTransferAddressFromInput(transaction.getInput());
 		
-		userTransaction.setAmount(new BigDecimal(amount).divide(configManager.getContractDecimal(CHAIN, currency)).toString());
+		userTransaction.setAmount(new BigDecimal(amount).divide(configManager.getContractDecimal(SupportedChain.ETH.name(), currency)).toString());
 		userTransaction.setBlockNumber(transaction.getBlockNumber().longValue());
 		userTransaction.setCurrency(currency);
 		userTransaction.setFromAddress(transaction.getFrom());

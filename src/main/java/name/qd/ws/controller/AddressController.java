@@ -12,14 +12,16 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import name.qd.ws.constant.SupportedChain;
 import name.qd.ws.dto.UserAddress;
 import name.qd.ws.service.AddressService;
 import name.qd.ws.service.eth.ETHService;
 import name.qd.ws.service.eth.ETHWalletService;
 import name.qd.ws.service.flow.FlowService;
+import name.qd.ws.service.solana.SolanaService;
 
 @RestController
-@RequestMapping("/address")
+@RequestMapping("/v1/address")
 public class AddressController {
 	
 	@Autowired
@@ -39,18 +41,20 @@ public class AddressController {
 	@RequestMapping(value = "/create", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<UserAddress> createAddress(@RequestParam String chain) throws Exception {
 		// TODO 可改成interface 或其他方法
-		if(ETHService.CHAIN.equals(chain)) {
+		if(SupportedChain.ETH.name().equals(chain)) {
 			return ResponseEntity.ok(ethWalletService.createAddress());
-		} else if(FlowService.CHAIN.equals(chain)) {
+		} else if(SupportedChain.SOL.name().equals(chain)) {
+			
+		} else if(SupportedChain.FLOW.name().equals(chain)) {
 //			return ResponseEntity.ok(flowService.createAddress());
 		}
 		throw new Exception(String.format("Chain is not supported, {}", chain));
 	}
 	
-	@RequestMapping(value = "/add", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<UserAddress> addAddress(@RequestBody String pkey) {
-		return ResponseEntity.ok(addressService.addAddress(pkey));
-	}
+//	@RequestMapping(value = "/add", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+//	public ResponseEntity<UserAddress> addAddress(@RequestBody String pkey) {
+//		return ResponseEntity.ok(addressService.addAddress(pkey));
+//	}
 	
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<UserAddress> getAddress(@PathVariable int id) {

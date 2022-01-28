@@ -8,26 +8,18 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
+
+import name.qd.ws.constant.SupportedChain;
 
 @Component
 public class ConfigManager {
-	@Autowired
-	private Environment env;
-	
-	private List<String> supportedChains;
-	
 	private Map<String, ChainConfig> mapChainConfig = new HashMap<>();
 	
-	@SuppressWarnings("unchecked")
 	@PostConstruct
 	public void init() {
-		supportedChains = env.getProperty("chains", List.class);
-		
-		for(String chain : supportedChains) {
-			mapChainConfig.put(chain, new ChainConfig(chain));
+		for(SupportedChain supportedChain : SupportedChain.values()) {
+			mapChainConfig.put(supportedChain.name(), new ChainConfig(supportedChain.name()));
 		}
 	}
 	
@@ -48,8 +40,8 @@ public class ConfigManager {
 	
 	public List<String> getSupportedCurrencies() {
 		List<String> lst = new ArrayList<>();
-		for(String chain : supportedChains) {
-			List<String> lstSupportedCurrencies = getSupportedCurrencies(chain);
+		for(SupportedChain supportedChain : SupportedChain.values()) {
+			List<String> lstSupportedCurrencies = getSupportedCurrencies(supportedChain.name());
 			lst.addAll(lstSupportedCurrencies);
 		}
 		return lst;

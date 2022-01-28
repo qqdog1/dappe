@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.web3j.utils.Convert.Unit;
 
 import name.qd.ws.config.ConfigManager;
+import name.qd.ws.constant.SupportedChain;
 import name.qd.ws.dto.UserTransaction;
 import name.qd.ws.service.eth.ETHWalletService;
 import name.qd.ws.service.flow.FlowService;
@@ -24,7 +25,7 @@ public class WalletController {
 	private ConfigManager configManager;
 	
 	@Autowired
-	private ETHWalletService walletService;
+	private ETHWalletService ethWalletService;
 	
 	@Autowired
 	private FlowService flowService;
@@ -41,18 +42,20 @@ public class WalletController {
 		// TODO check address format
 		
 		String balance = "";
-		if("ETH".equals(chain)) {
+		if(SupportedChain.ETH.name().equals(chain)) {
 			// divide應該移到service 裡面
-			if("ETH".equals(currency)) {
-				balance = new BigDecimal(walletService.getEthBalance(address)).divide(Unit.ETHER.getWeiFactor()).toPlainString();
+			if(SupportedChain.ETH.name().equals(currency)) {
+				balance = new BigDecimal(ethWalletService.getEthBalance(address)).divide(Unit.ETHER.getWeiFactor()).toPlainString();
 			} else {
 				BigDecimal contractDecimal = configManager.getContractDecimal(chain, currency);
 				if(contractDecimal == null) {
 					throw new Exception(String.format("Get contract decimal failed. currency: {}", currency));
 				}
-				balance = new BigDecimal(walletService.getTokenBalance(chain, address, currency)).divide(contractDecimal).toPlainString();
+				balance = new BigDecimal(ethWalletService.getTokenBalance(chain, address, currency)).divide(contractDecimal).toPlainString();
 			}
-		} else if("FLOW".equals(chain)) {
+		} else if(SupportedChain.SOL.name().equals(currency)) {
+			
+		} else if(SupportedChain.FLOW.name().equals(chain)) {
 //			balance = flowService.getBalance(address);
 		}
 		
@@ -65,21 +68,21 @@ public class WalletController {
 		
 		UserTransaction userTransaction = null;
 		if("ETH".equals(currency)) {
-			userTransaction = walletService.transferEth(id, toAddress, new BigDecimal(amount));
+			userTransaction = ethWalletService.transferEth(id, toAddress, new BigDecimal(amount));
 		} else {
-			userTransaction = walletService.transferToken(chain, currency, id, toAddress, new BigDecimal(amount));
+			userTransaction = ethWalletService.transferToken(chain, currency, id, toAddress, new BigDecimal(amount));
 		}
 		return ResponseEntity.ok(userTransaction);
 	}
 	
 	@RequestMapping(value = "/history/withdraw", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<UserTransaction>> getWithdrawHistory(@RequestParam int id) throws Exception {
-		return ResponseEntity.ok(walletService.getWithdrawHistory(id));
+		return ResponseEntity.ok(ethWalletService.getWithdrawHistory(id));
 	}
 	
 	@RequestMapping(value = "/history/deposit", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<UserTransaction>> getDepositHistory(@RequestParam int id) throws Exception {
-		return ResponseEntity.ok(walletService.getDepositHistory(id));
+		return ResponseEntity.ok(ethWalletService.getDepositHistory(id));
 	}
 	
 	private void checkIsSupportedCurrency(String currency) throws Exception {
