@@ -32,6 +32,9 @@ public class AddressController {
 	
 	@Autowired
 	private FlowService flowService;
+	
+	@Autowired
+	private SolanaService solanaService;
 
 	@RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<UserAddress>> getAllAddress() {
@@ -44,7 +47,7 @@ public class AddressController {
 		if(SupportedChain.ETH.name().equals(chain)) {
 			return ResponseEntity.ok(ethWalletService.createAddress());
 		} else if(SupportedChain.SOL.name().equals(chain)) {
-			
+			return ResponseEntity.ok(solanaService.createAddress());
 		} else if(SupportedChain.FLOW.name().equals(chain)) {
 //			return ResponseEntity.ok(flowService.createAddress());
 		}

@@ -17,6 +17,7 @@ import name.qd.ws.constant.SupportedChain;
 import name.qd.ws.dto.UserTransaction;
 import name.qd.ws.service.eth.ETHWalletService;
 import name.qd.ws.service.flow.FlowService;
+import name.qd.ws.service.solana.SolanaService;
 
 @RestController
 @RequestMapping("/wallet")
@@ -29,6 +30,9 @@ public class WalletController {
 	
 	@Autowired
 	private FlowService flowService;
+	
+	@Autowired
+	private SolanaService solanaService;
 
 	@RequestMapping(value = "/currencies", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<String>> getSupportCurrency() {
@@ -53,8 +57,8 @@ public class WalletController {
 				}
 				balance = new BigDecimal(ethWalletService.getTokenBalance(chain, address, currency)).divide(contractDecimal).toPlainString();
 			}
-		} else if(SupportedChain.SOL.name().equals(currency)) {
-			
+		} else if(SupportedChain.SOL.name().equals(chain)) {
+			balance = solanaService.getBalance(address, currency);
 		} else if(SupportedChain.FLOW.name().equals(chain)) {
 //			balance = flowService.getBalance(address);
 		}
