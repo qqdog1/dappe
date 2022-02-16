@@ -20,16 +20,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.web3j.utils.Convert.Unit;
-
-import com.google.common.collect.Lists;
 
 import name.qd.ws.config.ConfigManager;
 import name.qd.ws.constant.SupportedChain;
 import name.qd.ws.dto.UserAddress;
 import name.qd.ws.dto.UserTransaction;
 import name.qd.ws.repository.UserAddressRepository;
-import name.qd.ws.service.eth.ETHService;
+import name.qd.ws.repository.UserTransactionRepository;
 
 @Service
 public class SolanaService {
@@ -40,6 +37,9 @@ public class SolanaService {
 	
 	@Autowired
 	private UserAddressRepository userAddressRepository;
+	
+	@Autowired
+	private UserTransactionRepository userTransactionRepository;
 	
 	private RpcClient rpcClient;
 	
@@ -89,7 +89,7 @@ public class SolanaService {
 		return "0";
 	}
 	
-	public UserTransaction transferSOL(int id, String toAddress, long amount) {
+	public UserTransaction transferSOL(int id, String toAddress, String amount) {
 		UserTransaction userTransaction = new UserTransaction();
 		
 		Optional<UserAddress> optional = userAddressRepository.findById(id);
@@ -102,11 +102,23 @@ public class SolanaService {
 		List<Account> lst = new ArrayList<>();
 		lst.add(account);
 		
+		BigDecimal bigDecimalAmount = new BigDecimal(amount).multiply(configManager.getContractDecimal(SupportedChain.SOL.name(), SupportedChain.SOL.name()));
 		Transaction transaction = new Transaction();
-		transaction.addInstruction(SystemProgram.transfer(new PublicKey(userAddress.getAddress()), new PublicKey(toAddress), amount));
+		transaction.addInstruction(SystemProgram.transfer(new PublicKey(userAddress.getAddress()), new PublicKey(toAddress), bigDecimalAmount.longValue()));
 		
 		try {
-			rpcClient.getApi().sendAndConfirmTransaction(transaction, lst, solanaEventListener);
+//			rpcClient.getApi().sendAndConfirmTransaction(transaction, lst, solanaEventListener);
+			String signature = rpcClient.getApi().sendTransaction(transaction, account);
+			// TODO 要怎麼確認交易成功
+			if(signature != null) {
+				userTransaction.setAmount(amount);
+				userTransaction.setChain(SupportedChain.SOL.name());
+				userTransaction.setCurrency(SupportedChain.SOL.name());
+				userTransaction.setFromAddress(userAddress.getAddress());
+				userTransaction.setToAddress(toAddress);
+				
+				userTransaction = userTransactionRepository.save(userTransaction);
+			}
 		} catch (RpcException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -85,8 +85,7 @@ public class WalletController {
 			}
 		} else if(SupportedChain.SOL.name().equals(chain)) {
 			if(SupportedChain.SOL.name().equals(currency)) {
-				BigDecimal bigDecimalAmount = new BigDecimal(amount).multiply(configManager.getContractDecimal(SupportedChain.SOL.name(), SupportedChain.SOL.name()));
-				userTransaction = solanaService.transferSOL(id, toAddress, bigDecimalAmount.longValue());
+				userTransaction = solanaService.transferSOL(id, toAddress, amount);
 			} else {
 //				userTransaction = solanaService.transferToken(currency, id, toAddress, amount);
 			}
