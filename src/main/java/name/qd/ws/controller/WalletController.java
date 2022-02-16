@@ -61,7 +61,7 @@ public class WalletController {
 				if(contractDecimal == null) {
 					throw new Exception(String.format("Get contract decimal failed. currency: {}", currency));
 				}
-				balance = new BigDecimal(ethWalletService.getTokenBalance(chain, address, currency)).divide(contractDecimal).toPlainString();
+				balance = new BigDecimal(ethWalletService.getTokenBalance(address, currency)).divide(contractDecimal).toPlainString();
 			}
 		} else if(SupportedChain.SOL.name().equals(chain)) {
 			balance = solanaService.getBalance(address, currency);
@@ -77,11 +77,21 @@ public class WalletController {
 		checkIsSupportedCurrency(chain, currency);
 		
 		UserTransaction userTransaction = null;
-		if(SupportedChain.ETH.name().equals(currency)) {
-			userTransaction = ethWalletService.transferEth(id, toAddress, new BigDecimal(amount));
-		} else {
-			userTransaction = ethWalletService.transferToken(chain, currency, id, toAddress, new BigDecimal(amount));
+		if(SupportedChain.ETH.name().equals(chain)) {
+			if(SupportedChain.ETH.name().equals(currency)) {
+				userTransaction = ethWalletService.transferEth(id, toAddress, new BigDecimal(amount));
+			} else {
+				userTransaction = ethWalletService.transferToken(currency, id, toAddress, new BigDecimal(amount));
+			}
+		} else if(SupportedChain.SOL.name().equals(chain)) {
+			if(SupportedChain.SOL.name().equals(currency)) {
+				BigDecimal bigDecimalAmount = new BigDecimal(amount).multiply(configManager.getContractDecimal(SupportedChain.SOL.name(), SupportedChain.SOL.name()));
+				userTransaction = solanaService.transferSOL(id, toAddress, bigDecimalAmount.longValue());
+			} else {
+//				userTransaction = solanaService.transferToken(currency, id, toAddress, amount);
+			}
 		}
+		
 		return ResponseEntity.ok(userTransaction);
 	}
 	

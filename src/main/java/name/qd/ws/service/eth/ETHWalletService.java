@@ -92,8 +92,8 @@ public class ETHWalletService {
 		return ethGetBalance.getBalance();
 	}
 	
-	public BigInteger getTokenBalance(String chain, String address, String currency) throws Exception {
-		String contractAddress = configManager.getContractAddress(chain, currency);
+	public BigInteger getTokenBalance(String address, String currency) throws Exception {
+		String contractAddress = configManager.getContractAddress(SupportedChain.ETH.name(), currency);
 		if(contractAddress == null) {
 			throw new Exception(String.format("Can't find contract address, currency: {}", currency));
 		}
@@ -118,15 +118,15 @@ public class ETHWalletService {
 		return userTransaction;
 	}
 	
-	public UserTransaction transferToken(String chain, String currency, int id, String toAddress, BigDecimal amount) throws Exception {
+	public UserTransaction transferToken(String currency, int id, String toAddress, BigDecimal amount) throws Exception {
 		UserAddress userAddress = addressService.getAddress(id);
 		if(userAddress == null) throw new Exception("id not exist.");
 		
 		Credentials credentials = Credentials.create(userAddress.getPkey());
-		BigDecimal decimalAmount = amount.multiply(configManager.getContractDecimal(chain, currency));
+		BigDecimal decimalAmount = amount.multiply(configManager.getContractDecimal(SupportedChain.ETH.name(), currency));
 		BigInteger gasPrice = getLastGasPrice();
 		BigInteger gasLimit = BigInteger.valueOf(42000);
-		String contractAddress = configManager.getContractAddress(chain, currency);
+		String contractAddress = configManager.getContractAddress(SupportedChain.ETH.name(), currency);
 		ERC20 erc20 = ERC20.load(contractAddress, web3j, credentials, new StaticGasProvider(gasPrice, gasLimit));
 		
 		TransactionReceipt transactionReceipt = erc20.transfer(toAddress, decimalAmount.toBigInteger()).send();
