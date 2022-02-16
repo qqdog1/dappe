@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS user_address (
   id INT AUTO_INCREMENT PRIMARY KEY,
   chain VARCHAR(8) NOT NULL,
-  pkey VARCHAR(64) NOT NULL,
+  pkey VARCHAR(128) NOT NULL,
   public_key VARCHAR(128),
   address VARCHAR(64) NOT NULL
 );

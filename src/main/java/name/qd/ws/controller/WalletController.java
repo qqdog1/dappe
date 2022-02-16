@@ -1,7 +1,9 @@
 package name.qd.ws.controller;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -20,7 +22,7 @@ import name.qd.ws.service.flow.FlowService;
 import name.qd.ws.service.solana.SolanaService;
 
 @RestController
-@RequestMapping("/wallet")
+@RequestMapping("/v1/wallet")
 public class WalletController {
 	@Autowired
 	private ConfigManager configManager;
@@ -35,13 +37,17 @@ public class WalletController {
 	private SolanaService solanaService;
 
 	@RequestMapping(value = "/currencies", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<List<String>> getSupportCurrency() {
-		return ResponseEntity.ok(configManager.getSupportedCurrencies());
+	public ResponseEntity<Map<String, List<String>>> getSupportCurrency() {
+		Map<String, List<String>> map = new HashMap<>();
+		for(SupportedChain supportedChain : SupportedChain.values()) {
+			map.put(supportedChain.name(), configManager.getSupportedCurrencies(supportedChain.name()));
+		}
+		return ResponseEntity.ok(map);
 	}
 	
 	@RequestMapping(value = "/balance", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<String> getBalance(@RequestParam String chain, @RequestParam String address, @RequestParam String currency) throws Exception {
-		checkIsSupportedCurrency(currency);
+		checkIsSupportedCurrency(chain, currency);
 		
 		// TODO check address format
 		
@@ -68,10 +74,10 @@ public class WalletController {
 	
 	@RequestMapping(value = "/withdraw", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<UserTransaction> transfer(@RequestParam int id, @RequestParam String toAddress, @RequestParam String chain, @RequestParam String currency, @RequestParam String amount) throws Exception {
-		checkIsSupportedCurrency(currency);
+		checkIsSupportedCurrency(chain, currency);
 		
 		UserTransaction userTransaction = null;
-		if("ETH".equals(currency)) {
+		if(SupportedChain.ETH.name().equals(currency)) {
 			userTransaction = ethWalletService.transferEth(id, toAddress, new BigDecimal(amount));
 		} else {
 			userTransaction = ethWalletService.transferToken(chain, currency, id, toAddress, new BigDecimal(amount));
@@ -89,8 +95,8 @@ public class WalletController {
 		return ResponseEntity.ok(ethWalletService.getDepositHistory(id));
 	}
 	
-	private void checkIsSupportedCurrency(String currency) throws Exception {
-		if(!configManager.getSupportedCurrencies().contains(currency)) {
+	private void checkIsSupportedCurrency(String chain, String currency) throws Exception {
+		if(!configManager.getSupportedCurrencies(chain).contains(currency)) {
 			throw new Exception(String.format("Currency is not supported: {}", currency));
 		}
 	}

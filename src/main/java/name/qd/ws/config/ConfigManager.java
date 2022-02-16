@@ -38,15 +38,6 @@ public class ConfigManager {
 		return mapChainConfig.get(chain).getCurrencyByContractAddress(contractAddress);
 	}
 	
-	public List<String> getSupportedCurrencies() {
-		List<String> lst = new ArrayList<>();
-		for(SupportedChain supportedChain : SupportedChain.values()) {
-			List<String> lstSupportedCurrencies = getSupportedCurrencies(supportedChain.name());
-			lst.addAll(lstSupportedCurrencies);
-		}
-		return lst;
-	}
-	
 	public List<String> getSupportedCurrencies(String chain) {
 		return mapChainConfig.get(chain).getSupportedCurrencies();
 	}

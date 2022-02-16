@@ -76,7 +76,7 @@ public class ETHService {
 //	@Scheduled(initialDelay = 1 * 1000, fixedDelay = 10 * 1000)
 	private void syncBlock() {
 		logger.info("sync block start ...");
-		Block block = blockRepository.findByChain("ETH");
+		Block block = blockRepository.findByChain(SupportedChain.ETH.name());
 		if(block == null) {
 			insertCurrencyBlock();
 		} else {
@@ -99,7 +99,7 @@ public class ETHService {
 	
 	private void saveProcessedBlock(long blockNumber) {
 		Block block = new Block();
-		block.setChain("ETH");
+		block.setChain(SupportedChain.ETH.name());
 		block.setLastBlock(blockNumber);
 		blockRepository.save(block);
 	}
@@ -188,7 +188,7 @@ public class ETHService {
 			UserTransaction userTransaction = new UserTransaction();
 			userTransaction.setAmount(new BigDecimal(tx.getValue()).divide(Unit.ETHER.getWeiFactor()).toPlainString());
 			userTransaction.setBlockNumber(tx.getBlockNumber().longValue());
-			userTransaction.setCurrency("ETH");
+			userTransaction.setCurrency(SupportedChain.ETH.name());
 			userTransaction.setFromAddress(tx.getFrom());
 			userTransaction.setGas(tx.getGas().toString());
 			userTransaction.setHash(hash);

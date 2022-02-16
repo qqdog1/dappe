@@ -38,6 +38,7 @@ import org.web3j.utils.Numeric;
 import org.web3j.utils.Convert.Unit;
 
 import name.qd.ws.config.ConfigManager;
+import name.qd.ws.constant.SupportedChain;
 import name.qd.ws.dto.UserAddress;
 import name.qd.ws.dto.UserTransaction;
 import name.qd.ws.repository.UserAddressRepository;
@@ -75,6 +76,7 @@ public class ETHWalletService {
 		try {
 			ECKeyPair ecKeyPair = Keys.createEcKeyPair();
 			String newAddress = Keys.getAddress(ecKeyPair);
+			userAddress.setChain(SupportedChain.ETH.name());
 			userAddress.setAddress("0x" + newAddress);
 			userAddress.setPkey(ecKeyPair.getPrivateKey().toString(16));
 			
