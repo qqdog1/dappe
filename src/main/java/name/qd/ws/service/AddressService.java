@@ -29,7 +29,7 @@ public class AddressService {
 		return optional.get();
 	}
 	
-	public UserAddress addAddress(String pkey) {
+	public UserAddress addAddress(String chain, String pkey) {
 		// TODO FLOW chain 要怎麼add address
 		
 		if(pkey == null || pkey.length() != 64) return null;
@@ -40,7 +40,7 @@ public class AddressService {
 		userAddress.setAddress(credentials.getAddress());
 		userAddress.setPkey(pkey);
 		
-		if(!addressRepository.existsUserAddressByAddress(userAddress.getAddress())) {
+		if(!addressRepository.existsUserAddressByChainAndAddress(chain, userAddress.getAddress())) {
 			userAddress = addressRepository.save(userAddress);
 			return userAddress;
 		}

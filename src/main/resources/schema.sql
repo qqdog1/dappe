@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS user_transaction (
   currency VARCHAR(6),
   amount VARCHAR(64),
   gas VARCHAR(32),
-  hash VARCHAR(66),
+  hash VARCHAR(128),
   block_number BIGINT,
   confirm_count INT
 );

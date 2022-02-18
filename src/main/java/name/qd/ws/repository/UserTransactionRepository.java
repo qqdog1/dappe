@@ -14,8 +14,7 @@ public interface UserTransactionRepository extends CrudRepository<UserTransactio
 	@EntityGraph(attributePaths = "toAddress")
 	List<UserTransaction> findByToAddress(String toAddress);
 	
-	@EntityGraph(attributePaths = "confirmCount")
-	List<UserTransaction> findByConfirmCountLessThan(long confirmCount);
+	List<UserTransaction> findByChainAndConfirmCountLessThan(String chain, long confirmCount);
 	
 	boolean existsUserTransactionByHash(String hash);
 	

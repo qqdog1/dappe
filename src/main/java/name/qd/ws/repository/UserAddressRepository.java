@@ -9,5 +9,5 @@ import name.qd.ws.dto.UserAddress;
 public interface UserAddressRepository extends CrudRepository<UserAddress, Integer> {
 	List<UserAddress> findAll();
 	
-	boolean existsUserAddressByAddress(String address);
+	boolean existsUserAddressByChainAndAddress(String chain, String address);
 }

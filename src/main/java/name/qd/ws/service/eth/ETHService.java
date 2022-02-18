@@ -10,7 +10,6 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
@@ -36,6 +35,8 @@ import name.qd.ws.repository.UserTransactionRepository;
 public class ETHService {
 	private static Logger logger = LoggerFactory.getLogger(ETHService.class);
 	
+	private String chain = SupportedChain.ETH.name();
+	
 	@Autowired
 	private ConfigManager configManager;
 	
@@ -54,7 +55,7 @@ public class ETHService {
 	
 	@PostConstruct
 	private void init() {
-		String nodeUrl = configManager.getNodeUrl(SupportedChain.ETH.name());
+		String nodeUrl = configManager.getNodeUrl(chain);
 		web3j = Web3j.build(new HttpService(nodeUrl));
 
 		try {
@@ -63,7 +64,7 @@ public class ETHService {
 			logger.error("Get eth node version failed, url:{}", nodeUrl, e);
 		}
 		
-		confirmCount = configManager.getConfirmCount(SupportedChain.ETH.name());
+		confirmCount = configManager.getConfirmCount(chain);
 //		subscribeTransaction();
 	}
 	
@@ -76,9 +77,9 @@ public class ETHService {
 //	@Scheduled(initialDelay = 1 * 1000, fixedDelay = 10 * 1000)
 	private void syncBlock() {
 		logger.info("sync block start ...");
-		Block block = blockRepository.findByChain(SupportedChain.ETH.name());
+		Block block = blockRepository.findByChain(chain);
 		if(block == null) {
-			insertCurrencyBlock();
+			insertCurrentBlock();
 		} else {
 			BigInteger lastBlockNumber = getLastBlockNumber();
 			if(lastBlockNumber != null) {
@@ -89,9 +90,9 @@ public class ETHService {
 		logger.info("sync block end ...");
 	}
 	
-	private void insertCurrencyBlock() {
+	private void insertCurrentBlock() {
 		BigInteger lastBlockNumber = getLastBlockNumber();
-		logger.info("no existing block data in db, save current block as last block: {}", lastBlockNumber);
+		logger.info("{} no existing block data in db, save current block as last block: {}", chain, lastBlockNumber);
 		if(lastBlockNumber != null) {
 			saveProcessedBlock(lastBlockNumber.longValue());
 		}
@@ -99,7 +100,7 @@ public class ETHService {
 	
 	private void saveProcessedBlock(long blockNumber) {
 		Block block = new Block();
-		block.setChain(SupportedChain.ETH.name());
+		block.setChain(chain);
 		block.setLastBlock(blockNumber);
 		blockRepository.save(block);
 	}
@@ -117,7 +118,7 @@ public class ETHService {
 	
 	private void updateConfirmCount(BigInteger blockNumber) {
 		logger.info("update confirm count, last block number: {}", blockNumber);
-		List<UserTransaction> lst = userTransactionRepository.findByConfirmCountLessThan(confirmCount);
+		List<UserTransaction> lst = userTransactionRepository.findByChainAndConfirmCountLessThan(chain, confirmCount);
 		
 		if(lst != null && lst.size() > 0) {
 			for(UserTransaction userTransaction : lst) {
@@ -142,18 +143,18 @@ public class ETHService {
 					String toAddress = transaction.getTo();
 					// to address 如果是一般address 就是轉ETH, 是 contract address 就可能是轉幣
 					// TODO 每個block 去scan db 未來應該是要改成Batch
-					if(userAddressRepository.existsUserAddressByAddress(toAddress)) {
+					if(userAddressRepository.existsUserAddressByChainAndAddress(chain, toAddress)) {
 						if(!userTransactionRepository.existsUserTransactionByHash(transaction.getHash())) {
 							logger.info("found new ETH transaction, hash: {}", transaction.getHash());
 							transferETHRecord(transaction.getHash());
 						}
-					} else if(configManager.isSupportedContractAddress(SupportedChain.ETH.name(), toAddress)) {
+					} else if(configManager.isSupportedContractAddress(chain, toAddress)) {
 						String input = transaction.getInput();
 						// transfer
 						if(input.startsWith("0xa9059cbb")) {
 							String depositAddress = getTransferAddressFromInput(input);
 							
-							if(userAddressRepository.existsUserAddressByAddress(depositAddress)) {
+							if(userAddressRepository.existsUserAddressByChainAndAddress(chain, depositAddress)) {
 								if(!userTransactionRepository.existsUserTransactionByHash(transaction.getHash())) {
 									logger.info("found new token transaction, hash: {}", transaction.getHash());
 									transferTokenRecord(transaction);
@@ -203,10 +204,10 @@ public class ETHService {
 	private void transferTokenRecord(TransactionObject transaction) {
 		UserTransaction userTransaction = new UserTransaction();
 		BigInteger amount = getAmountFromInput(transaction.getInput());
-		String currency = configManager.getCurrencyByContractAddress(SupportedChain.ETH.name(), transaction.getTo());
+		String currency = configManager.getCurrencyByContractAddress(chain, transaction.getTo());
 		String toAddress = getTransferAddressFromInput(transaction.getInput());
 		
-		userTransaction.setAmount(new BigDecimal(amount).divide(configManager.getContractDecimal(SupportedChain.ETH.name(), currency)).toString());
+		userTransaction.setAmount(new BigDecimal(amount).divide(configManager.getContractDecimal(chain, currency)).toString());
 		userTransaction.setBlockNumber(transaction.getBlockNumber().longValue());
 		userTransaction.setCurrency(currency);
 		userTransaction.setFromAddress(transaction.getFrom());
